@@ -18,10 +18,16 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.core.SurfaceOrientedMeteringPointFactory
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.video.FallbackStrategy
+import androidx.camera.video.Quality
+import androidx.camera.video.QualitySelector
+import androidx.camera.video.Recorder
+import androidx.camera.video.VideoCapture
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import com.m7corp.xerocamera.CameraFunctionality.CameraMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -36,39 +42,68 @@ class XeroCamera private constructor(
   owner: LifecycleOwner?,
   mediaActionSound: MediaActionSound,
 ) {
-
   class Builder {
     private var context: Context? = null
     private var activity: Activity? = null
     private var owner: LifecycleOwner? = null
     private var cameraPreview: PreviewView? = null
-    private var focusSquare: View? = null
-    private lateinit var imageCapture: ImageCapture
-    private var camera: Camera? = null
-
-    fun setContext(context: Context) = apply { this.context = context }
-    fun setActivity(activity: Activity) = apply { this.activity = activity }
-    fun setLifecycleOwner(owner: LifecycleOwner) = apply { this.owner = owner }
-    fun setCameraPreview(cameraPreview: PreviewView) = apply { this.cameraPreview = cameraPreview }
 
     // SOUND
     private lateinit var mediaActionSound: MediaActionSound
 
+    // FOCUS
+    private var customFocusDrawable: Int? = R.drawable.focus_square
+    private var focusSquare: View? = null
+
+    // BASE CAMERA
+    private var camera: Camera? = null
+    private lateinit var imageCapture: ImageCapture
+    private lateinit var videoCapture: VideoCapture<Recorder>
+    private lateinit var cameraProvider: ProcessCameraProvider
+    private lateinit var cameraSelector: CameraSelector
+    private lateinit var preview: Preview
+    private var cameraMode: CameraMode = CameraMode.Photo
+
+    fun setContext(context: Context) = apply { this.context = context }
+    fun setLifecycleOwner(owner: LifecycleOwner) = apply { this.owner = owner }
+    fun setCameraPreview(cameraPreview: PreviewView) = apply { this.cameraPreview = cameraPreview }
+    fun setCustomFocusDrawable(customFocusDrawable: Int?) =
+      apply { this.customFocusDrawable = customFocusDrawable }
+    fun setMode(cameraMode: CameraMode) = apply { this.cameraMode = cameraMode }
+
+    @SuppressLint("RestrictedApi")
     private fun startCamera() {
       val cameraProviderFuture = ProcessCameraProvider.getInstance(context!!)
       cameraProviderFuture.addListener({
-        val cameraProvider = cameraProviderFuture.get()
-        val cameraSelector = CameraSelector.Builder().requireLensFacing(
-          CameraSelector
-            .LENS_FACING_BACK
-        ).build()
-        val preview = Preview.Builder().build()
-        imageCapture = ImageCapture.Builder().build()
+        cameraProvider = cameraProviderFuture.get()
+        cameraSelector =
+          CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
+        preview = Preview.Builder().build()
+        imageCapture = ImageCapture.Builder().setFlashMode(ImageCapture.FLASH_MODE_ON)
+          .setFlashType(ImageCapture.FLASH_TYPE_USE_TORCH_AS_FLASH).build()
+        videoCapture = VideoCapture.withOutput(
+          Recorder.Builder().setQualitySelector(
+            QualitySelector.from(
+              Quality.UHD,
+              FallbackStrategy.lowerQualityOrHigherThan(Quality.SD)
+            )
+          ).setTargetVideoEncodingBitRate(5000000).build()
+        )
         try {
-          cameraProvider.unbindAll()
-          camera = cameraProvider.bindToLifecycle(
-            owner!!, cameraSelector, preview, imageCapture
-          )
+          when (cameraMode) {
+            is CameraMode.Photo -> {
+              cameraProvider.unbindAll()
+              camera = cameraProvider.bindToLifecycle(owner!!, cameraSelector, preview, imageCapture)
+            }
+            is CameraMode.Video -> {
+              cameraProvider.unbindAll()
+              camera = cameraProvider.bindToLifecycle(owner!!, cameraSelector, preview, videoCapture)
+            }
+            is CameraMode.PhotoVideo -> {
+              cameraProvider.unbindAll()
+              camera = cameraProvider.bindToLifecycle(owner!!, cameraSelector, preview, imageCapture, videoCapture)
+            }
+          }
           preview.setSurfaceProvider(cameraPreview?.surfaceProvider)
           setupTouchFocus()
         } catch (e: Exception) {
@@ -77,11 +112,21 @@ class XeroCamera private constructor(
       }, ContextCompat.getMainExecutor(context!!))
     }
 
+//    fun switchMode(cameraMode: CameraMode){
+//      when(cameraMode){
+//        is CameraMode.Photo -> this.cameraMode = CameraMode.Photo
+//        is CameraMode.Video -> this.cameraMode = CameraMode.Video
+//        CameraMode.PhotoVideo -> this.cameraMode = CameraMode.PhotoVideo
+//      }
+//    }
+
+    // TAKE PHOTO
     fun takePhoto(
-      captureButton: View, folderName: String? = "XeroCam",
+      captureButton: View, folderName: String? = "XeroCamera",
       onImageSavedCallback: (() -> Unit?)? = null,
     ) {
       captureButton.setOnClickListener {
+        captureButton.isClickable = false
         val rootDirectory = ContextCompat.getExternalFilesDirs(context!!, null).firstOrNull()?.let {
           File(
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
@@ -108,6 +153,7 @@ class XeroCamera private constructor(
                   captureSound().apply {
                     applyBlinkEffect()
                   }
+                  captureButton.isClickable = true
                 }
               }
             }
@@ -127,6 +173,7 @@ class XeroCamera private constructor(
         )
       }
     }
+
 
     // UTILITIES
     private fun captureSound() {
@@ -181,7 +228,6 @@ class XeroCamera private constructor(
     private fun drawFocusSquare(
       x: Float,
       y: Float,
-      customFocusDrawable: Int? = R.drawable.focus_square,
     ) {
       focusSquare?.let { cameraPreview!!.removeView(it) }
       val squareSize = 150
@@ -203,7 +249,7 @@ class XeroCamera private constructor(
         .start()
     }
 
-    fun build(): XeroCamera {
+    fun start(): XeroCamera {
       requireNotNull(context) {
         "Context must be set"
       }
@@ -213,8 +259,8 @@ class XeroCamera private constructor(
       requireNotNull(cameraPreview) {
         "Camera Preview must be set"
       }
-      startCamera()
       mediaActionSound = MediaActionSound()
+      startCamera()
       return XeroCamera(context, activity, owner, mediaActionSound)
     }
   }

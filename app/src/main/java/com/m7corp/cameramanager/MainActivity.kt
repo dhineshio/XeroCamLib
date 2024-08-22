@@ -2,12 +2,13 @@ package com.m7corp.cameramanager
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.graphics.Camera
 import android.os.Bundle
 import android.widget.Button
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.view.PreviewView
+import com.m7corp.xerocamera.CameraFunctionality.CameraMode
 import com.m7corp.xerocamera.XeroCamera
 import com.permissionx.guolindev.PermissionX
 
@@ -47,11 +48,9 @@ class MainActivity : AppCompatActivity() {
             setContext(this@MainActivity)
             setLifecycleOwner(this@MainActivity)
             setCameraPreview(cameraPreview)
-            takePhoto(switchMode) {
-              Toast.makeText(this@MainActivity, "Image Captured Successfully", Toast.LENGTH_SHORT)
-                .show()
-            }
-            build()
+            takePhoto(switchMode)
+            setMode(CameraMode.PhotoVideo)
+            start()
           }
         }
       }
