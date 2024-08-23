@@ -1,4 +1,4 @@
-package com.m7corp.cameramanager
+package com.xero.cameramanager
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

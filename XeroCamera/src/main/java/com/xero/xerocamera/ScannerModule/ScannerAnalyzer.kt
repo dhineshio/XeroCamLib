@@ -1,4 +1,4 @@
-package com.m7corp.xerocamera.ScannerModule
+package com.xero.xerocamera.ScannerModule
 
 import android.annotation.SuppressLint
 import android.util.Log

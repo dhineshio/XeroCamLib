@@ -1,4 +1,4 @@
-package com.m7corp.xerocamera
+package com.xero.xerocamera
 
 import android.content.Context
 import android.view.View
@@ -6,8 +6,9 @@ import androidx.annotation.IntRange
 import androidx.camera.core.ImageCapture
 import androidx.camera.view.PreviewView
 import androidx.lifecycle.LifecycleOwner
-import com.m7corp.xerocamera.Models.CameraConfig
-import com.m7corp.xerocamera.ScannerModule.PhotoCapture
+import com.xero.xerocamera.CameraModule.CameraInitializer
+import com.xero.xerocamera.Models.CameraConfig
+import com.xero.xerocamera.ScannerModule.PhotoCapture
 
 class XeroCamera private constructor(
   private var context: Context,

@@ -1,4 +1,4 @@
-package com.m7corp.xerocamera
+package com.xero.xerocamera
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

@@ -1,4 +1,4 @@
-package com.m7corp.cameramanager
+package com.xero.cameramanager
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -10,8 +10,9 @@ import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.view.PreviewView
-import com.m7corp.xerocamera.XeroCamera
+import com.xero.xerocamera.XeroCamera
 import com.permissionx.guolindev.PermissionX
+import com.xero.cameramanager.R
 
 class MainActivity : AppCompatActivity() {
   private lateinit var cameraPreview: PreviewView

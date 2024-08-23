@@ -1,4 +1,4 @@
-package com.m7corp.xerocamera.ScannerModule
+package com.xero.xerocamera.ScannerModule
 
 import android.content.Context
 import android.os.Environment
@@ -7,7 +7,7 @@ import android.view.View
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.core.content.ContextCompat
-import com.m7corp.xerocamera.Utility
+import com.xero.xerocamera.Utility
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-  namespace = "com.m7corp.cameramanager"
+  namespace = "com.xero.cameramanager"
   compileSdk = 34
 
   defaultConfig {
-    applicationId = "com.m7corp.cameramanager"
+    applicationId = "com.xero.cameramanager"
     minSdk = 26
     targetSdk = 34
     versionCode = 1

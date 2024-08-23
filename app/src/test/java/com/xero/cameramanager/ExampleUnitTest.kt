@@ -1,4 +1,4 @@
-package com.m7corp.cameramanager
+package com.xero.cameramanager
 
 import org.junit.Test
 

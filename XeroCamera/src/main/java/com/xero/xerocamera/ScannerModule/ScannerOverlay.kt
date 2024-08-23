@@ -1,4 +1,4 @@
-package com.m7corp.xerocamera.ScannerModule
+package com.xero.xerocamera.ScannerModule
 
 import android.animation.ArgbEvaluator
 import android.animation.PropertyValuesHolder

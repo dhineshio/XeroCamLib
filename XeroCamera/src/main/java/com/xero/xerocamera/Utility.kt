@@ -1,4 +1,4 @@
-package com.m7corp.xerocamera
+package com.xero.xerocamera
 
 import android.media.MediaActionSound
 import android.view.View

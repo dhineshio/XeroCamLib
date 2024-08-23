@@ -1,4 +1,4 @@
-package com.m7corp.xerocamera.Models
+package com.xero.xerocamera.Models
 
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture

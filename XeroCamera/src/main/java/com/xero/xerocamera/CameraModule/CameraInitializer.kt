@@ -1,4 +1,4 @@
-package com.m7corp.xerocamera
+package com.xero.xerocamera.CameraModule
 
 import android.content.Context
 import android.util.Log
@@ -16,7 +16,7 @@ import androidx.camera.video.VideoCapture
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import com.m7corp.xerocamera.Models.CameraConfig
+import com.xero.xerocamera.Models.CameraConfig
 
 class CameraInitializer(
   private val context: Context,

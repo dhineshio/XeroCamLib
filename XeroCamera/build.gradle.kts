@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-  namespace = "com.m7corp.xerocamera"
+  namespace = "com.xero.xerocamera"
   compileSdk = 34
 
   defaultConfig {
