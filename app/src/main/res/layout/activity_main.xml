@@ -7,21 +7,30 @@
 	android:layout_height="match_parent"
 	tools:context=".MainActivity">
 
-  <androidx.camera.view.PreviewView
-	  xmlns:android="http://schemas.android.com/apk/res/android"
-	  android:id="@+id/cameraPreview"
-	  android:layout_width="match_parent"
-	  android:layout_height="match_parent"
-	  android:backgroundTint="#AEA9A9" />
+	<androidx.camera.view.PreviewView
+		android:id="@+id/cameraPreview"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:backgroundTint="#AEA9A9" />
 
   <Button
 	  android:id="@+id/switchMode"
 	  android:layout_width="wrap_content"
 	  android:layout_height="wrap_content"
 	  android:text="Switch"
-	  android:layout_marginBottom="20dp"
+	  android:layout_marginBottom="50dp"
 	  app:layout_constraintBottom_toBottomOf="parent"
 	  app:layout_constraintEnd_toEndOf="parent"
+	  app:layout_constraintStart_toStartOf="parent" />
+
+  <Button
+	  android:id="@+id/capture"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="Capture"
+	  android:layout_marginBottom="50dp"
+	  app:layout_constraintBottom_toBottomOf="parent"
+	  app:layout_constraintEnd_toStartOf="@+id/switchMode"
 	  app:layout_constraintStart_toStartOf="parent" />
 
 

@@ -2,19 +2,21 @@ package com.m7corp.cameramanager
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.graphics.Camera
 import android.os.Bundle
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.Camera
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
 import androidx.camera.view.PreviewView
-import com.m7corp.xerocamera.CameraFunctionality.CameraMode
 import com.m7corp.xerocamera.XeroCamera
 import com.permissionx.guolindev.PermissionX
 
 class MainActivity : AppCompatActivity() {
   private lateinit var cameraPreview: PreviewView
   private lateinit var switchMode: Button
+  private lateinit var captureButton : Button
   private val requiredPermissions = mutableListOf(
     Manifest.permission.CAMERA,
   )
@@ -26,6 +28,17 @@ class MainActivity : AppCompatActivity() {
     setContentView(R.layout.activity_main)
     cameraPreview = findViewById(R.id.cameraPreview)
     switchMode = findViewById(R.id.switchMode)
+    captureButton = findViewById(R.id.capture)
+
+    val xeroCamera = XeroCamera.builder().apply {
+      setContext(this@MainActivity)
+      setLifecycleOwner(this@MainActivity)
+      setCameraPreview(cameraPreview)
+      setLensFacing(CameraSelector.LENS_FACING_BACK)
+      setFlashMode(ImageCapture.FLASH_MODE_OFF)
+      setPhotoQuality(100)
+    }.build()
+
 
     PermissionX.init(this)
       .permissions(requiredPermissions)
@@ -44,15 +57,15 @@ class MainActivity : AppCompatActivity() {
       }
       .request { allGranted, _, _ ->
         if (allGranted) {
-          XeroCamera.builder().apply {
-            setContext(this@MainActivity)
-            setLifecycleOwner(this@MainActivity)
-            setCameraPreview(cameraPreview)
-            takePhoto(switchMode)
-            setMode(CameraMode.PhotoVideo)
-            start()
+          xeroCamera.apply {
+            startCamera()
+            takePhoto(captureButton)
           }
         }
       }
+
+    switchMode.setOnClickListener{
+      xeroCamera.switchLensFacing(CameraSelector.LENS_FACING_FRONT)
+    }
   }
 }
