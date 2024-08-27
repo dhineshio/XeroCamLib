@@ -7,35 +7,36 @@ import android.view.View
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.core.content.ContextCompat
-import com.xero.xerocamera.Utility
+import com.xero.xerocamera.Models.CameraCore
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class PhotoCapture (
-  private val context: Context,
-  private val imageCapture: ImageCapture,
-  private val captureSound : () -> Unit
-){
+class PhotoCapture(
+  private val context : Context,
+  private val cameraCore: CameraCore,
+  private val captureSound: () -> Unit
+) {
   fun takePhoto(
     captureButton: View,
   ) {
     captureButton.setOnClickListener {
-      val rootDirectory = ContextCompat.getExternalFilesDirs(context, null).firstOrNull()?.let {
-        File(
-          Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
-          "Demo"
-        )
-      }?.apply {
-        if (!exists()) mkdirs()
-      }
+      val rootDirectory =
+        ContextCompat.getExternalFilesDirs(context, null).firstOrNull()?.let {
+          File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
+            "Demo"
+          )
+        }?.apply {
+          if (!exists()) mkdirs()
+        }
       val outputDirectory = File(rootDirectory, "Photo").apply {
         if (!exists()) mkdirs()
       }
       val formattedTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
       val imageFile = File(outputDirectory, "img_$formattedTime.jpg")
       val outputOptions = ImageCapture.OutputFileOptions.Builder(imageFile).build()
-      imageCapture.takePicture(
+      cameraCore.imageCapture!!.takePicture(
         outputOptions, ContextCompat.getMainExecutor(context),
         object : ImageCapture.OnImageSavedCallback {
           override fun onCaptureStarted() {

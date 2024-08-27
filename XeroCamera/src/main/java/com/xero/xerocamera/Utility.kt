@@ -1,11 +1,12 @@
 package com.xero.xerocamera
 
+import android.graphics.Color
 import android.media.MediaActionSound
 import android.view.View
 import android.view.ViewGroup
-import androidx.camera.view.PreviewView
+import com.xero.xerocamera.Models.CameraCore
 
-class Utility(private val cameraPreview: PreviewView) {
+class Utility(private val cameraCore: CameraCore) {
   private val mediaActionSound = MediaActionSound()
 
   fun captureSound() {
@@ -19,18 +20,18 @@ class Utility(private val cameraPreview: PreviewView) {
   }
 
   private fun applyBlinkEffect() {
-    val overlayView = View(cameraPreview.context).apply {
-      setBackgroundColor(android.graphics.Color.BLACK)
+    val overlayView = View(cameraCore.cameraPreview!!.context).apply {
+      setBackgroundColor(Color.BLACK)
       alpha = 0f
       layoutParams = ViewGroup.LayoutParams(
         ViewGroup.LayoutParams.MATCH_PARENT,
         ViewGroup.LayoutParams.MATCH_PARENT
       )
     }
-    (cameraPreview as ViewGroup).addView(overlayView)
+    (cameraCore.cameraPreview!! as ViewGroup).addView(overlayView)
     overlayView.animate().alpha(1f).setDuration(100).withEndAction {
       overlayView.animate().alpha(0f).setDuration(100).withEndAction {
-        cameraPreview.removeView(overlayView)
+        cameraCore.cameraPreview!!.removeView(overlayView)
       }.start()
     }.start()
   }
