@@ -34,4 +34,8 @@ class Utility(private val cameraPreview: PreviewView) {
       }.start()
     }.start()
   }
+
+  fun cleanup() {
+      mediaActionSound.release()
+  }
 }

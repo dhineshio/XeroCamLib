@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter
 class PhotoCapture (
   private val context: Context,
   private val imageCapture: ImageCapture,
-  private val utility: Utility
+  private val captureSound : () -> Unit
 ){
   fun takePhoto(
     captureButton: View,
@@ -40,7 +40,7 @@ class PhotoCapture (
         object : ImageCapture.OnImageSavedCallback {
           override fun onCaptureStarted() {
             super.onCaptureStarted()
-            utility.captureSound()
+            captureSound.invoke()
           }
 
           override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {

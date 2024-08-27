@@ -6,13 +6,11 @@ import android.os.Bundle
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.view.PreviewView
 import com.xero.xerocamera.XeroCamera
 import com.permissionx.guolindev.PermissionX
-import com.xero.cameramanager.R
 
 class MainActivity : AppCompatActivity() {
   private lateinit var cameraPreview: PreviewView
@@ -39,7 +37,6 @@ class MainActivity : AppCompatActivity() {
       setFlashMode(ImageCapture.FLASH_MODE_OFF)
       setPhotoQuality(100)
     }.build()
-
 
     PermissionX.init(this)
       .permissions(requiredPermissions)
