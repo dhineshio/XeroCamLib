@@ -12,14 +12,14 @@ import com.xero.xerocamera.CameraModule.CameraInitializer
 import com.xero.xerocamera.CameraModule.FocusManager
 import com.xero.xerocamera.Models.CameraConfig
 import com.xero.xerocamera.Models.CameraCore
-import com.xero.xerocamera.ScannerModule.PhotoCapture
+import com.xero.xerocamera.CameraModule.PhotoCapture
 
 class XeroCamera private constructor(
   private var context: Context,
   private var owner: LifecycleOwner,
   private var utility: Utility,
   private var cameraConfig: CameraConfig,
-  private var cameraCore: CameraCore
+  private var cameraCore: CameraCore,
 ) : DefaultLifecycleObserver {
   private lateinit var cameraInitializer: CameraInitializer
   private lateinit var photoCapture: PhotoCapture
@@ -45,8 +45,17 @@ class XeroCamera private constructor(
     updateConfig { it.copy(zoomRatio = zoomRatio) }
   }
 
+  fun enableScanner(isScanner: Boolean){
+    updateCore { it.copy(isScanner = isScanner) }
+  }
+
   private fun updateConfig(update: (CameraConfig) -> CameraConfig) {
     cameraConfig = update(cameraConfig)
+  }
+
+  private fun updateCore(update : (CameraCore) -> CameraCore){
+    cameraCore = update(cameraCore)
+    startCamera()
   }
 
   class Builder {
@@ -77,6 +86,7 @@ class XeroCamera private constructor(
     fun setZoomRatio(@FloatRange(from = 0.0, to = 4.0) zoomRatio: Float) =
       apply { cameraConfig = cameraConfig.copy(zoomRatio = zoomRatio) }
 
+    fun isScanner(isScanner: Boolean)= apply { cameraCore.isScanner = isScanner }
 
     // START AN APP
     fun build(): XeroCamera {
@@ -94,7 +104,6 @@ class XeroCamera private constructor(
   init {
     owner.lifecycle.addObserver(this)
   }
-
 
   override fun onResume(owner: LifecycleOwner) {
     super.onResume(owner)

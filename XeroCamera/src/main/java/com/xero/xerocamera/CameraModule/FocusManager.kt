@@ -38,7 +38,6 @@ class FocusManager(
           focusSound.invoke()
           true
         }
-
         else -> false
       }
     }

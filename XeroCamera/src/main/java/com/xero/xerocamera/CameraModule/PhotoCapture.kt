@@ -1,4 +1,4 @@
-package com.xero.xerocamera.ScannerModule
+package com.xero.xerocamera.CameraModule
 
 import android.content.Context
 import android.os.Environment

@@ -3,19 +3,22 @@ package com.xero.cameramanager
 import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.view.PreviewView
-import com.xero.xerocamera.XeroCamera
 import com.permissionx.guolindev.PermissionX
+import com.xero.xerocamera.ScannerModule.ScannerViewState
+import com.xero.xerocamera.XeroCamera
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(){
   private lateinit var cameraPreview: PreviewView
   private lateinit var switchMode: Button
-  private lateinit var captureButton : Button
+  private lateinit var captureButton: Button
   private val requiredPermissions = mutableListOf(
     Manifest.permission.CAMERA,
   )
@@ -50,20 +53,22 @@ class MainActivity : AppCompatActivity() {
       .onForwardToSettings { scope, deniedList ->
         scope.showForwardToSettingsDialog(
           deniedList, "This app requires the following " +
-            "permissions ! You have denied them. Please grant the permissions.", "Go to Settings"
+              "permissions ! You have denied them. Please grant the permissions.", "Go to Settings"
         )
       }
       .request { allGranted, _, _ ->
         if (allGranted) {
           xeroCamera.apply {
             startCamera()
-            takePhoto(captureButton)
           }
         }
       }
 
-    switchMode.setOnClickListener{
-      xeroCamera.switchLensFacing(CameraSelector.LENS_FACING_FRONT)
+    switchMode.setOnClickListener {
+      xeroCamera.enableScanner(true)
+    }
+    captureButton.setOnClickListener{
+      xeroCamera.enableScanner(false)
     }
   }
 }
