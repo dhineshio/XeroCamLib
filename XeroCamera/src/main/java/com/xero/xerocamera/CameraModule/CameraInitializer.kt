@@ -21,6 +21,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.xero.xerocamera.Models.CameraConfig
 import com.xero.xerocamera.Models.CameraCore
 import com.xero.xerocamera.ScannerModule.ScannerAnalyzer
+import com.xero.xerocamera.ScannerModule.ScannerOverlay
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -45,7 +46,7 @@ class CameraInitializer(
           bindCamera(
             cameraCore.imageCapture!!,
             if (cameraCore.isScanner!!)  {
-              val scannerAnalyzer = ScannerAnalyzer { state, barcode ->
+              val scannerAnalyzer = ScannerAnalyzer(cameraCore.scannerOverlay!!) { state, barcode ->
                 Log.e("Scanner", "$state $barcode")
               }
               getImageAnalysis(cameraExecutor, scannerAnalyzer)

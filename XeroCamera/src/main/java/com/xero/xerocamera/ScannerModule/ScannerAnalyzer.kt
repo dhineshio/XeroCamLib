@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class ScannerAnalyzer(
+  private val scannerOverlay: ScannerOverlay,
   private val onResult: (state: ScannerViewState, barcode: String) -> Unit,
 ) : ImageAnalysis.Analyzer {
   private var isScanning: Boolean = false
@@ -33,6 +34,7 @@ class ScannerAnalyzer(
             .addOnSuccessListener { barcodes ->
               for (barcode in barcodes) {
                 onResult(ScannerViewState.Success, barcode.rawValue ?: "")
+                scannerOverlay.setScanSuccessful(true)
                 isScanning = true
               }
             }
@@ -53,6 +55,7 @@ class ScannerAnalyzer(
 
   fun startScanning(isScanned: Boolean) {
     isScanning = isScanned
+    scannerOverlay.setScanSuccessful(true)
     Log.d("ScannerAnalyzer", "setTest: $isScanning")
   }
 }

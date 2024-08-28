@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity(){
       setLensFacing(CameraSelector.LENS_FACING_BACK)
       setFlashMode(ImageCapture.FLASH_MODE_OFF)
       setPhotoQuality(100)
+      isScanner(true)
     }.build()
 
     PermissionX.init(this)
