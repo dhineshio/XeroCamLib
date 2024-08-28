@@ -2,17 +2,26 @@ package com.xero.xerocamera
 
 import android.content.Context
 import android.util.Log
+import android.view.TextureView
 import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.annotation.FloatRange
 import androidx.annotation.IntRange
 import androidx.camera.view.PreviewView
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.xero.xerocamera.CameraModule.CameraInitializer
 import com.xero.xerocamera.CameraModule.FocusManager
 import com.xero.xerocamera.Models.CameraConfig
 import com.xero.xerocamera.Models.CameraCore
 import com.xero.xerocamera.CameraModule.PhotoCapture
+import com.xero.xerocamera.ScannerModule.ScannerOverlay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class XeroCamera private constructor(
   private var context: Context,
@@ -24,6 +33,7 @@ class XeroCamera private constructor(
   private lateinit var cameraInitializer: CameraInitializer
   private lateinit var photoCapture: PhotoCapture
   private lateinit var focusManager: FocusManager
+  private var scannerOverlay : ScannerOverlay? = null
 
   fun startCamera() {
     cameraInitializer = CameraInitializer(context, owner, cameraCore, cameraConfig)
@@ -47,6 +57,24 @@ class XeroCamera private constructor(
 
   fun enableScanner(isScanner: Boolean){
     updateCore { it.copy(isScanner = isScanner) }
+    owner.lifecycleScope.launch {
+      withContext(Dispatchers.Main){
+        delay(200L)
+        if (isScanner && scannerOverlay == null) {
+          scannerOverlay = ScannerOverlay(context).apply {
+            layoutParams = FrameLayout.LayoutParams(
+              FrameLayout.LayoutParams.MATCH_PARENT,
+              FrameLayout.LayoutParams.MATCH_PARENT
+            )
+          }
+          (cameraCore.cameraPreview!!.parent as? ViewGroup)?.addView(scannerOverlay)
+        } else if (!isScanner) {
+          delay(200L)
+          (cameraCore.cameraPreview!!.parent as? ViewGroup)?.removeView(scannerOverlay)
+          scannerOverlay = null
+        }
+      }
+    }
   }
 
   private fun updateConfig(update: (CameraConfig) -> CameraConfig) {

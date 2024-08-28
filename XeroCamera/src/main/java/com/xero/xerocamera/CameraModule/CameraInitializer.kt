@@ -21,7 +21,6 @@ import androidx.lifecycle.LifecycleOwner
 import com.xero.xerocamera.Models.CameraConfig
 import com.xero.xerocamera.Models.CameraCore
 import com.xero.xerocamera.ScannerModule.ScannerAnalyzer
-import com.xero.xerocamera.ScannerModule.ScannerViewState
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
