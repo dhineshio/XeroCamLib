@@ -1,4 +1,4 @@
-package com.xero.xerocamera.CameraModule
+package com.xero.xerocamera.Camera.CameraModule
 
 import android.annotation.SuppressLint
 import android.view.MotionEvent
@@ -6,7 +6,7 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.SurfaceOrientedMeteringPointFactory
-import com.xero.xerocamera.Models.CameraCore
+import com.xero.xerocamera.Camera.Models.CameraCore
 import com.xero.xerocamera.R
 import java.util.concurrent.TimeUnit
 

@@ -1,4 +1,4 @@
-package com.xero.xerocamera.CameraModule
+package com.xero.xerocamera.Camera.CameraModule
 
 import android.content.Context
 import android.os.Environment
@@ -7,7 +7,7 @@ import android.view.View
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.core.content.ContextCompat
-import com.xero.xerocamera.Models.CameraCore
+import com.xero.xerocamera.Camera.Models.CameraCore
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -19,6 +19,8 @@ class PhotoCapture(
 ) {
   fun takePhoto(
     captureButton: View,
+    onSuccess : (imagePath : String) -> Unit,
+    onFailure :(exception : Exception) -> Unit
   ) {
     captureButton.setOnClickListener {
       val rootDirectory =
@@ -46,10 +48,12 @@ class PhotoCapture(
 
           override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
             val imagePath = outputFileResults.savedUri?.path ?: "Path not Available"
+            onSuccess.invoke(imagePath)
             Log.e("ImageCapture", "Image Capture has Done $imagePath")
           }
 
           override fun onError(exception: ImageCaptureException) {
+            onFailure.invoke(exception)
             Log.e("ImageCapture", "Image Capture Failed $exception")
           }
         }

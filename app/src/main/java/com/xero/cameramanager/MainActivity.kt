@@ -3,7 +3,6 @@ package com.xero.cameramanager
 import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -12,8 +11,8 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.view.PreviewView
 import com.permissionx.guolindev.PermissionX
-import com.xero.xerocamera.CameraModule.CaptureMode
-import com.xero.xerocamera.ScannerModule.ScannerViewState
+import com.xero.xerocamera.Camera.CameraModule.FlashMode
+import com.xero.xerocamera.Camera.CameraModule.LensFacing
 import com.xero.xerocamera.XeroCamera
 
 class MainActivity : AppCompatActivity(){
@@ -37,11 +36,8 @@ class MainActivity : AppCompatActivity(){
       setContext(this@MainActivity)
       setLifecycleOwner(this@MainActivity)
       setCameraPreview(cameraPreview)
-      setLensFacing(CameraSelector.LENS_FACING_BACK)
-      setFlashMode(ImageCapture.FLASH_MODE_OFF)
-      setPhotoQuality(100)
-      setZoomRatio(2.0f)
-      setCaptureMode(CaptureMode.Video)
+      setLensFacing(LensFacing.FrontFacing)
+      enableScanner(true)
     }.build()
 
     PermissionX.init(this)
@@ -62,14 +58,16 @@ class MainActivity : AppCompatActivity(){
       .request { allGranted, _, _ ->
         if (allGranted) {
           xeroCamera.startCamera()
+          xeroCamera.takePhoto(captureButton, onSuccess = {
+            Toast.makeText(this, "Image saved successfully $it", Toast.LENGTH_SHORT).show()
+          }, onFailure = {
+            Toast.makeText(this, "Image save Failed $it", Toast.LENGTH_SHORT).show()
+          })
         }
       }
 
     switchMode.setOnClickListener {
-      xeroCamera.enableScanner(true)
-    }
-    captureButton.setOnClickListener{
-      xeroCamera.enableScanner(false)
+      xeroCamera.switchLensFacing(LensFacing.BackFacing)
     }
   }
 }

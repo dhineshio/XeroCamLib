@@ -1,4 +1,4 @@
-package com.xero.xerocamera.ScannerModule
+package com.xero.xerocamera.Scanner.ScannerModule
 
 sealed class ScannerViewState {
   data object Success : ScannerViewState()

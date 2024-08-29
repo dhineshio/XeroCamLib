@@ -1,4 +1,4 @@
-package com.xero.xerocamera.ScannerModule
+package com.xero.xerocamera.Scanner.ScannerModule
 
 import android.animation.ArgbEvaluator
 import android.animation.PropertyValuesHolder
@@ -12,9 +12,6 @@ import android.graphics.Path
 import android.util.AttributeSet
 import android.view.HapticFeedbackConstants
 import android.view.View
-import com.xero.xerocamera.Models.CameraCore
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
 
