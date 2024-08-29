@@ -10,11 +10,17 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
+import android.view.HapticFeedbackConstants
 import android.view.View
+import com.xero.xerocamera.Models.CameraCore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
 
 class ScannerOverlay @JvmOverloads constructor(
+  private val view: View?,
+  private val hapticFeedBack: Int,
   context: Context,
   attrs: AttributeSet? = null,
   defStyleAttr: Int = 0,
@@ -85,6 +91,7 @@ class ScannerOverlay @JvmOverloads constructor(
     scanSuccessful = successful
     if (successful) {
       animateSuccessColor()
+      provideHapticFeedback(view, hapticFeedBack)
     } else {
       framePaint.color = Color.WHITE
       qrScannerWidth = 250.toPx
@@ -241,4 +248,9 @@ class ScannerOverlay @JvmOverloads constructor(
       drawPath(qrScannerCornersShape, framePaint)
     }
   }
+
+  fun provideHapticFeedback(view: View?, hapticFeedBack : Int) =
+    view?.performHapticFeedback(
+      hapticFeedBack, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
+    )
 }

@@ -12,6 +12,7 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.view.PreviewView
 import com.permissionx.guolindev.PermissionX
+import com.xero.xerocamera.CameraModule.CaptureMode
 import com.xero.xerocamera.ScannerModule.ScannerViewState
 import com.xero.xerocamera.XeroCamera
 
@@ -39,7 +40,8 @@ class MainActivity : AppCompatActivity(){
       setLensFacing(CameraSelector.LENS_FACING_BACK)
       setFlashMode(ImageCapture.FLASH_MODE_OFF)
       setPhotoQuality(100)
-      isScanner(true)
+      setZoomRatio(2.0f)
+      setCaptureMode(CaptureMode.Video)
     }.build()
 
     PermissionX.init(this)
@@ -59,9 +61,7 @@ class MainActivity : AppCompatActivity(){
       }
       .request { allGranted, _, _ ->
         if (allGranted) {
-          xeroCamera.apply {
-            startCamera()
-          }
+          xeroCamera.startCamera()
         }
       }
 

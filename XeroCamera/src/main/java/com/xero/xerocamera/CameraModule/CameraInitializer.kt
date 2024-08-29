@@ -42,9 +42,24 @@ class CameraInitializer(
         cameraProvider = it.get()
         try {
           shutdownCamera()
-          cameraCore.imageCapture = bindImageCapture()
+          when (cameraConfig.captureMode) {
+            is CaptureMode.Image -> {
+              cameraCore.imageCapture = bindImageCapture()
+              Log.e("CaptureMode" ,"Photo Capture Mode")
+            }
+            is CaptureMode.Video -> {
+              cameraCore.videoCapture = bindVideoCapture()
+              Log.e("CaptureMode" ,"Video Capture Mode")
+            }
+            is CaptureMode.Both -> {
+              cameraCore.imageCapture = bindImageCapture()
+              cameraCore.videoCapture = bindVideoCapture()
+              Log.e("CaptureMode" ,"Photo & Video Capture Mode")
+            }
+          }
           bindCamera(
-            cameraCore.imageCapture!!,
+            cameraCore.imageCapture,
+            cameraCore.videoCapture,
             if (cameraCore.isScanner!!)  {
               val scannerAnalyzer = ScannerAnalyzer(cameraCore.scannerOverlay!!) { state, barcode ->
                 Log.e("Scanner", "$state $barcode")
