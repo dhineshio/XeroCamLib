@@ -246,7 +246,7 @@ class ScannerOverlay @JvmOverloads constructor(
     }
   }
 
-  fun provideHapticFeedback(view: View?, hapticFeedBack : Int) =
+  private fun provideHapticFeedback(view: View?, hapticFeedBack : Int) =
     view?.performHapticFeedback(
       hapticFeedBack, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
     )

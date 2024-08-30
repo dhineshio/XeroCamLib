@@ -53,9 +53,9 @@ class ScannerAnalyzer(
     }
   }
 
-  fun startScanning(isScanned: Boolean) {
+  fun isScanned(isScanned: Boolean) {
     isScanning = isScanned
-    scannerOverlay.setScanSuccessful(true)
+    scannerOverlay.setScanSuccessful(false)
     Log.d("ScannerAnalyzer", "setTest: $isScanning")
   }
 }

@@ -11,28 +11,57 @@
 		android:id="@+id/cameraPreview"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:backgroundTint="#AEA9A9" />
+		android:backgroundTint="#AEA9A9"
+		tools:layout_editor_absoluteX="-120dp"
+		tools:layout_editor_absoluteY="16dp" />
 
-  <Button
-	  android:id="@+id/switchMode"
-	  android:layout_width="wrap_content"
-	  android:layout_height="wrap_content"
-	  android:text="Switch"
-	  android:layout_marginBottom="50dp"
-	  app:layout_constraintBottom_toBottomOf="parent"
-	  app:layout_constraintEnd_toEndOf="parent"
-	  app:layout_constraintStart_toStartOf="parent" />
+	<Button
+		android:id="@+id/switchMode"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginBottom="50dp"
+		android:text="Switch"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent" />
 
-  <Button
-	  android:id="@+id/capture"
-	  android:layout_width="wrap_content"
-	  android:layout_height="wrap_content"
-	  android:text="Capture"
-	  android:layout_marginBottom="50dp"
-	  app:layout_constraintBottom_toBottomOf="parent"
-	  app:layout_constraintEnd_toStartOf="@+id/switchMode"
-	  app:layout_constraintStart_toStartOf="parent" />
+	<Button
+		android:id="@+id/frontCamera"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginBottom="50dp"
+		android:text="Front"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toEndOf="@+id/switchMode" />
 
+	<Button
+		android:id="@+id/capture"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginBottom="50dp"
+		android:text="Capture"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toStartOf="@+id/switchMode"
+		app:layout_constraintStart_toStartOf="parent" />
+
+	<Button
+		android:id="@+id/enableScanner"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginTop="50dp"
+		android:text="Scan on"
+		app:layout_constraintStart_toEndOf="@+id/disableScanner"
+		app:layout_constraintTop_toTopOf="parent" />
+
+	<Button
+		android:id="@+id/disableScanner"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="Scan off"
+		android:layout_marginTop="50dp"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toTopOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

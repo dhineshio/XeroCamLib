@@ -1,27 +1,26 @@
 package com.xero.xerocamera.Camera.CameraModule
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import android.util.Size
 import android.view.Surface
+import android.widget.Toast
 import androidx.annotation.FloatRange
-import androidx.camera.core.AspectRatio
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.core.UseCase
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.video.FallbackStrategy
-import androidx.camera.video.Quality
-import androidx.camera.video.QualitySelector
-import androidx.camera.video.Recorder
-import androidx.camera.video.VideoCapture
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.xero.xerocamera.Camera.Models.CameraCore
 import com.xero.xerocamera.Scanner.ScannerModule.ScannerAnalyzer
+import com.xero.xerocamera.Scanner.ScannerModule.ScannerViewState
+import com.xero.xerocamera.Utility.Utility
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -29,52 +28,28 @@ class CameraInitializer(
   private val context: Context,
   private val owner: LifecycleOwner,
   private val cameraCore: CameraCore,
+  private var imageCapture: ImageCapture,
+  private val utility: Utility
 ) {
+  interface ScannerCallback {
+	fun onScannerStateChanged(barcode: String)
+  }
+
   private lateinit var cameraProvider: ProcessCameraProvider
   private val cameraExecutor: ExecutorService by lazy {
 	Executors.newSingleThreadExecutor()
   }
+  private lateinit var camera: Camera
+  private var scannerCallback: ScannerCallback? = null
+  private lateinit var scannerAnalyzer: ScannerAnalyzer
+  private lateinit var focusManager: FocusManager
 
-  @SuppressLint("RestrictedApi")
   fun initializeCamera() {
 	ProcessCameraProvider.getInstance(context).also { it ->
 	  it.addListener({
 		cameraProvider = it.get()
 		try {
-		  shutdownCamera()
-		  cameraCore.imageCapture = ImageCapture.Builder().build()
-		  cameraCore.videoCapture = VideoCapture.withOutput(
-			Recorder.Builder().also {
-			  it.setQualitySelector(
-				QualitySelector.from(
-				  Quality.UHD,
-				  FallbackStrategy.lowerQualityOrHigherThan(Quality.SD)
-				)
-			  )
-			  it.setAspectRatio(AspectRatio.RATIO_16_9)
-			  it.setTargetVideoEncodingBitRate(5000000)
-			}.build()
-		  )
-		  cameraCore.cameraSelector = CameraSelector.Builder().also {
-			it.requireLensFacing(
-			  when (cameraCore.lensFacing1) {
-				is LensFacing.BackFacing -> CameraSelector.LENS_FACING_BACK
-				is LensFacing.FrontFacing -> CameraSelector.LENS_FACING_FRONT
-			  }
-			)
-		  }.build()
-		  bindCamera(
-			cameraCore.imageCapture,
-			cameraCore.videoCapture,
-			if (cameraCore.isScanner!!) {
-			  val scannerAnalyzer = ScannerAnalyzer(cameraCore.scannerOverlay!!) { state, barcode ->
-				Log.e("Scanner", "$state $barcode")
-			  }
-			  getImageAnalysis(cameraExecutor, scannerAnalyzer)
-			} else {
-			  null
-			}
-		  )
+		  bindCamera()
 		} catch (e: Exception) {
 		  Log.e("Xero Builder", "Use Case binding failed $e")
 		}
@@ -82,48 +57,49 @@ class CameraInitializer(
 	}
   }
 
-  fun setFlashMode(flashMode: FlashMode) {
-	when (flashMode) {
-	  is FlashMode.FlashOn -> {
-		cameraCore.camera!!.cameraControl.enableTorch(false)
-		cameraCore.imageCapture?.flashMode = ImageCapture.FLASH_MODE_ON
+  private fun bindCamera() {
+	cameraProvider.unbindAll()
+	val useCases = mutableListOf<UseCase>()
+	useCases.add(imageCapture)
+	if (cameraCore.isScanner!!) {
+	  scannerAnalyzer = ScannerAnalyzer(cameraCore.scannerOverlay!!) { state, barcode ->
+		when(state){
+		  is ScannerViewState.Success -> scannerCallback?.onScannerStateChanged(barcode)
+		  is ScannerViewState.Failure -> {
+			resetScanning()
+			Toast.makeText(context, "Scanning Failed", Toast.LENGTH_SHORT).show()
+		  }
+		}
 	  }
-
-	  is FlashMode.FlashOff -> {
-		cameraCore.camera!!.cameraControl.enableTorch(false)
-		cameraCore.imageCapture?.flashMode = ImageCapture.FLASH_MODE_OFF
-	  }
-
-	  is FlashMode.FlashAuto -> {
-		cameraCore.camera!!.cameraControl.enableTorch(false)
-		cameraCore.imageCapture?.flashMode = ImageCapture.FLASH_MODE_OFF
-	  }
-
-	  is FlashMode.TorchMode -> {
-		cameraCore.camera!!.cameraControl.enableTorch(true)
-		cameraCore.imageCapture?.flashMode = ImageCapture.FLASH_MODE_OFF
-	  }
+	  useCases.add(getImageAnalysis(cameraExecutor, scannerAnalyzer))
 	}
-  }
-
-  fun setZoom(@FloatRange(from = 0.0, to = 4.0) zoomRatio: Float) {
-	cameraCore.camera!!.cameraControl.setZoomRatio(zoomRatio)
-  }
-
-  private fun bindCamera(vararg useCase: UseCase?) {
-	val nonNullUseCases = useCase.filterNotNull()
-	cameraCore.camera = cameraProvider.bindToLifecycle(
+	camera = cameraProvider.bindToLifecycle(
 	  owner,
-	  cameraCore.cameraSelector!!,
+	  bindCameraSelector(),
 	  bindPreview(),
-	  *nonNullUseCases.toTypedArray()
+	  *useCases.toTypedArray()
 	)
+	focusManager = FocusManager(cameraCore, camera, utility)
+  }
+
+  fun resetScanning(){
+	scannerAnalyzer.isScanned(false)
+  }
+
+  private fun bindCameraSelector(): CameraSelector {
+	return CameraSelector.Builder().also {
+	  it.requireLensFacing(cameraCore.lensFacing)
+	}.build()
   }
 
   private fun bindPreview(): Preview {
 	return Preview.Builder().build().also {
 	  it.setSurfaceProvider(cameraCore.cameraPreview!!.surfaceProvider)
 	}
+  }
+
+  fun setScannerCallback(callback: ScannerCallback) {
+	this.scannerCallback = callback
   }
 
   private fun getImageAnalysis(
@@ -139,10 +115,59 @@ class CameraInitializer(
 	  }
   }
 
+
+
+
+
+//  private fun bindVideoCapture(): VideoCapture<Recorder> {
+//	return VideoCapture.withOutput(bindRecorder())
+//  }
+//
+//  private fun bindRecorder(): Recorder {
+//	return Recorder.Builder().also {
+//	  it.setQualitySelector(
+//		QualitySelector.from(
+//		  Quality.UHD,
+//		  FallbackStrategy.lowerQualityOrHigherThan(Quality.SD)
+//		)
+//	  )
+//	  it.setAspectRatio(AspectRatio.RATIO_16_9)
+//	  it.setTargetVideoEncodingBitRate(5000000)
+//	}.build()
+//  }
+
+
+
+
+  fun setZoom(@FloatRange(from = 0.0, to = 4.0) zoomRatio: Float) {
+	camera.cameraControl.setZoomRatio(zoomRatio)
+  }
+
+  fun setFlashMode(flashMode: FlashMode) {
+	when (flashMode) {
+	  is FlashMode.FlashOn -> {
+		camera.cameraControl.enableTorch(false)
+//		imageCapture.flashMode = ImageCapture.FLASH_MODE_ON
+	  }
+
+	  is FlashMode.FlashOff -> {
+		camera.cameraControl.enableTorch(false)
+//		imageCapture.flashMode = ImageCapture.FLASH_MODE_OFF
+	  }
+
+	  is FlashMode.FlashAuto -> {
+		camera.cameraControl.enableTorch(false)
+//		imageCapture.flashMode = ImageCapture.FLASH_MODE_OFF
+	  }
+
+	  is FlashMode.TorchMode -> {
+		camera.cameraControl.enableTorch(true)
+//		imageCapture.flashMode = ImageCapture.FLASH_MODE_OFF
+	  }
+	}
+  }
+
   fun shutdownCamera() {
 	cameraProvider.unbindAll()
-	cameraCore.imageCapture = null
-	cameraCore.cameraSelector = null
-	cameraCore.videoCapture = null
   }
 }

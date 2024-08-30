@@ -2,17 +2,21 @@ package com.xero.xerocamera.Camera.CameraModule
 
 import android.annotation.SuppressLint
 import android.view.MotionEvent
+import android.view.SoundEffectConstants
 import android.view.View
 import android.widget.FrameLayout
+import androidx.camera.core.Camera
 import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.SurfaceOrientedMeteringPointFactory
 import com.xero.xerocamera.Camera.Models.CameraCore
 import com.xero.xerocamera.R
+import com.xero.xerocamera.Utility.Utility
 import java.util.concurrent.TimeUnit
 
 class FocusManager(
   private val cameraCore: CameraCore,
-  private val focusSound: () -> Unit
+  private val camera: Camera,
+  private val utility: Utility
 ) {
   private var focusSquare: View? = null
 
@@ -21,7 +25,7 @@ class FocusManager(
   }
 
   @SuppressLint("ClickableViewAccessibility")
-  private fun setupTouchFocus() {
+  fun setupTouchFocus() {
     cameraCore.cameraPreview!!.setOnTouchListener { _, event ->
       when (event.action) {
         MotionEvent.ACTION_DOWN -> {
@@ -33,9 +37,8 @@ class FocusManager(
           val action = FocusMeteringAction.Builder(point)
             .setAutoCancelDuration(3, TimeUnit.SECONDS)
             .build()
-          cameraCore.camera!!.cameraControl.startFocusAndMetering(action)
+          camera.cameraControl.startFocusAndMetering(action)
           drawFocusSquare(event.x, event.y)
-          focusSound.invoke()
           true
         }
         else -> false
@@ -57,6 +60,7 @@ class FocusManager(
       }
     }
     cameraCore.cameraPreview!!.addView(square)
+    utility.focusSound()
     focusSquare = square
     square.alpha = 1f
     square.animate()

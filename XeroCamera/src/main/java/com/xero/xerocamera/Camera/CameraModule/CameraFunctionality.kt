@@ -22,9 +22,8 @@ sealed class LensFacing{
 
 interface CameraFunctionality {
   fun startCamera()
-  fun switchLensFacing(lensFacing: LensFacing)
+  fun switchLensFacing(lensFacing: Int)
   fun takePhoto(
-	captureButton: View,
 	onSuccess: (imagePath: String) -> Unit,
 	onFailure: (exception: Exception) -> Unit
   )
@@ -36,7 +35,6 @@ interface CameraFunctionality {
 	fun setContext(context : Context) : XeroCamera.Builder
 	fun setCameraPreview(cameraPreview: PreviewView) : XeroCamera.Builder
 	fun setLifecycleOwner(owner : LifecycleOwner) : XeroCamera.Builder
-	fun setLensFacing(lensFacing: LensFacing) : XeroCamera.Builder
 	fun enableScanner(isScanner: Boolean) : XeroCamera.Builder
   }
 }
