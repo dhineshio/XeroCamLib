@@ -57,6 +57,44 @@ class CameraInitializer(
 	}
   }
 
+  fun resetScanning(){
+	if(::scannerAnalyzer.isInitialized){
+	  scannerAnalyzer.isScanned(false)
+	}
+  }
+
+  fun setScannerCallback(callback: ScannerCallback) {
+	this.scannerCallback = callback
+  }
+
+  fun setFlashMode(flashMode: FlashMode) {
+	when (flashMode) {
+	  is FlashMode.FlashOn -> {
+		camera.cameraControl.enableTorch(false)
+		imageCapture.flashMode = ImageCapture.FLASH_MODE_ON
+	  }
+
+	  is FlashMode.FlashOff -> {
+		camera.cameraControl.enableTorch(false)
+		imageCapture.flashMode = ImageCapture.FLASH_MODE_OFF
+	  }
+
+	  is FlashMode.FlashAuto -> {
+		camera.cameraControl.enableTorch(false)
+		imageCapture.flashMode = ImageCapture.FLASH_MODE_AUTO
+	  }
+
+	  is FlashMode.TorchMode -> {
+		camera.cameraControl.enableTorch(true)
+		imageCapture.flashMode = ImageCapture.FLASH_MODE_OFF
+	  }
+	}
+  }
+
+  fun setZoom(@FloatRange(from = 0.0, to = 4.0) zoomRatio: Float) {
+	camera.cameraControl.setZoomRatio(zoomRatio)
+  }
+
   private fun bindCamera() {
 	cameraProvider.unbindAll()
 	val useCases = mutableListOf<UseCase>()
@@ -82,10 +120,6 @@ class CameraInitializer(
 	focusManager = FocusManager(cameraCore, camera, utility)
   }
 
-  fun resetScanning(){
-	scannerAnalyzer.isScanned(false)
-  }
-
   private fun bindCameraSelector(): CameraSelector {
 	return CameraSelector.Builder().also {
 	  it.requireLensFacing(cameraCore.lensFacing)
@@ -96,10 +130,6 @@ class CameraInitializer(
 	return Preview.Builder().build().also {
 	  it.setSurfaceProvider(cameraCore.cameraPreview!!.surfaceProvider)
 	}
-  }
-
-  fun setScannerCallback(callback: ScannerCallback) {
-	this.scannerCallback = callback
   }
 
   private fun getImageAnalysis(
@@ -114,10 +144,6 @@ class CameraInitializer(
 		it.setAnalyzer(cameraExecutor!!, scannerAnalyzer)
 	  }
   }
-
-
-
-
 
 //  private fun bindVideoCapture(): VideoCapture<Recorder> {
 //	return VideoCapture.withOutput(bindRecorder())
@@ -135,37 +161,6 @@ class CameraInitializer(
 //	  it.setTargetVideoEncodingBitRate(5000000)
 //	}.build()
 //  }
-
-
-
-
-  fun setZoom(@FloatRange(from = 0.0, to = 4.0) zoomRatio: Float) {
-	camera.cameraControl.setZoomRatio(zoomRatio)
-  }
-
-  fun setFlashMode(flashMode: FlashMode) {
-	when (flashMode) {
-	  is FlashMode.FlashOn -> {
-		camera.cameraControl.enableTorch(false)
-//		imageCapture.flashMode = ImageCapture.FLASH_MODE_ON
-	  }
-
-	  is FlashMode.FlashOff -> {
-		camera.cameraControl.enableTorch(false)
-//		imageCapture.flashMode = ImageCapture.FLASH_MODE_OFF
-	  }
-
-	  is FlashMode.FlashAuto -> {
-		camera.cameraControl.enableTorch(false)
-//		imageCapture.flashMode = ImageCapture.FLASH_MODE_OFF
-	  }
-
-	  is FlashMode.TorchMode -> {
-		camera.cameraControl.enableTorch(true)
-//		imageCapture.flashMode = ImageCapture.FLASH_MODE_OFF
-	  }
-	}
-  }
 
   fun shutdownCamera() {
 	cameraProvider.unbindAll()

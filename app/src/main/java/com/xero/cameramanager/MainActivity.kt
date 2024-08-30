@@ -4,12 +4,14 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.widget.Button
+import android.widget.SeekBar
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.view.PreviewView
 import com.permissionx.guolindev.PermissionX
+import com.xero.xerocamera.Camera.CameraModule.FlashMode
 import com.xero.xerocamera.XeroCamera
 
 class MainActivity : AppCompatActivity() {
@@ -19,6 +21,11 @@ class MainActivity : AppCompatActivity() {
   private lateinit var captureButton: Button
   private lateinit var scanOn: Button
   private lateinit var scanOff: Button
+  private lateinit var flashOn : Button
+  private lateinit var flashOff : Button
+  private lateinit var torch : Button
+  private lateinit var zoom : SeekBar
+
   private val requiredPermissions = mutableListOf(
 	Manifest.permission.CAMERA,
   )
@@ -35,6 +42,11 @@ class MainActivity : AppCompatActivity() {
 	scanOn = findViewById(R.id.enableScanner)
 	frontCamera = findViewById(R.id.frontCamera)
 	scanOff = findViewById(R.id.disableScanner)
+	flashOn = findViewById(R.id.flashOn)
+	flashOff = findViewById(R.id.flashOff)
+	torch = findViewById(R.id.torch)
+	zoom = findViewById(R.id.seekBar2)
+
 
 	val xeroCamera = XeroCamera.builder().apply {
 	  setContext(this@MainActivity)
@@ -68,16 +80,7 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	captureButton.setOnClickListener {
-	  if (!res.isNullOrEmpty() || res != null) {
-		xeroCamera.takePhoto(onSuccess = {
-		  Toast.makeText(this, "Image saved successfully $it $res", Toast.LENGTH_SHORT).show()
-		  xeroCamera.resetScanning()
-		}, onFailure = {
-		  Toast.makeText(this, "Image save Failed $it", Toast.LENGTH_SHORT).show()
-		})
-	  } else {
-		Toast.makeText(this, "Scan First", Toast.LENGTH_SHORT).show()
-	  }
+		xeroCamera.takePhoto()
 	}
 
 	scanOn.setOnClickListener {
@@ -87,6 +90,17 @@ class MainActivity : AppCompatActivity() {
 	scanOff.setOnClickListener {
 	  xeroCamera.resetScanning()
 	}
+	flashOn.setOnClickListener {
+	  xeroCamera.setFlashMode(FlashMode.FlashOn)
+	}
+	flashOff.setOnClickListener {
+	  xeroCamera.setFlashMode(FlashMode.FlashOff)
+	}
+	torch.setOnClickListener {
+	  xeroCamera.setFlashMode(FlashMode.TorchMode)
+	}
+
+	xeroCamera.setSeekBarZoom(seekBar = zoom)
 
 	switchMode.setOnClickListener {
 	  xeroCamera.switchLensFacing(CameraSelector.LENS_FACING_FRONT)

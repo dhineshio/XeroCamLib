@@ -3,9 +3,9 @@ package com.xero.xerocamera
 import android.content.Context
 import android.util.Log
 import android.view.HapticFeedbackConstants
-import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.SeekBar
 import androidx.annotation.FloatRange
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -18,11 +18,9 @@ import androidx.lifecycle.lifecycleScope
 import com.xero.xerocamera.Camera.CameraModule.CameraFunctionality
 import com.xero.xerocamera.Camera.CameraModule.CameraInitializer
 import com.xero.xerocamera.Camera.CameraModule.FlashMode
-import com.xero.xerocamera.Camera.CameraModule.FocusManager
 import com.xero.xerocamera.Camera.CameraModule.PhotoCapture
 import com.xero.xerocamera.Camera.Models.CameraCore
 import com.xero.xerocamera.Scanner.ScannerModule.ScannerOverlay
-import com.xero.xerocamera.Scanner.ScannerModule.ScannerViewState
 import com.xero.xerocamera.Utility.Utility
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -59,10 +57,17 @@ class XeroCamera private constructor(
   }
 
   override fun switchLensFacing(lensFacing: Int) {
-	if(lensFacing == CameraSelector.LENS_FACING_FRONT){
+	if (lensFacing == CameraSelector.LENS_FACING_FRONT) {
 	  enableScanner(false)
 	}
 	updateCore { it.copy(lensFacing = lensFacing) }
+  }
+
+  override fun takePhoto(
+	onSuccess: ((imagePath: String) -> Unit)?,
+	onFailure: ((exception: Exception) -> Unit)?
+  ) {
+	photoCapture.takePhoto(onSuccess, onFailure)
   }
 
   override fun enableScanner(isScanner: Boolean) {
@@ -91,7 +96,7 @@ class XeroCamera private constructor(
 	}
   }
 
-  fun resetScanning(){
+  override fun resetScanning() {
 	_scannerBarcode.postValue(null)
 	cameraInitializer.resetScanning()
   }
@@ -104,17 +109,26 @@ class XeroCamera private constructor(
 	cameraInitializer.setZoom(zoomRatio)
   }
 
-
-
-
-
-
-
-  override fun takePhoto(
-	onSuccess: (imagePath: String) -> Unit,
-	onFailure: (exception: Exception) -> Unit
+  override fun setSeekBarZoom(
+	seekBar: SeekBar,
+	onStart: (() -> Unit)?,
+	onStop: (() -> Unit)?
   ) {
-	photoCapture.takePhoto(onSuccess, onFailure)
+	seekBar.max = 100
+	seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+	  override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+		val minValue = 0.0f
+		val maxValue = 4.0f
+		val currentValue = minValue + (progress / 100.0f) * (maxValue - minValue)
+		setZoomRatio(currentValue)
+	  }
+	  override fun onStartTrackingTouch(seekBar: SeekBar?) {
+		onStart?.invoke()
+	  }
+	  override fun onStopTrackingTouch(seekBar: SeekBar?) {
+		onStop?.invoke()
+	  }
+	})
   }
 
   private fun createScannerOverlay() {
@@ -196,6 +210,5 @@ class XeroCamera private constructor(
   companion object {
 	fun builder() = Builder()
   }
-
 }
 

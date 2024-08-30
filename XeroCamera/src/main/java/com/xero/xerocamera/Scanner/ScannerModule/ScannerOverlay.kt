@@ -9,9 +9,12 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.view.HapticFeedbackConstants
 import android.view.View
+import androidx.core.animation.addListener
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
 
@@ -25,6 +28,7 @@ class ScannerOverlay @JvmOverloads constructor(
 
   private var scanSuccessful = false
   private val successColor = Color.GREEN // Or any color you prefer
+  private val hideOverlayHandler = Handler(Looper.getMainLooper()) // Handler to hide overlay after delay
 
   private lateinit var backgroundShape: Path
   private lateinit var qrScannerShape: Path
@@ -84,12 +88,30 @@ class ScannerOverlay @JvmOverloads constructor(
     animator.start()
   }
 
+  private fun fadeOutOverlay() {
+    val fadeOut = ValueAnimator.ofFloat(1f, 0f).apply {
+      duration = 500
+      addUpdateListener { animation ->
+        alpha = animation.animatedValue as Float
+      }
+      addListener(onEnd = {
+        visibility = View.INVISIBLE
+        alpha = 1f
+      })
+    }
+    fadeOut.start()
+  }
+
   fun setScanSuccessful(successful: Boolean) {
     scanSuccessful = successful
     if (successful) {
       animateSuccessColor()
       provideHapticFeedback(view, hapticFeedBack)
+      hideOverlayHandler.postDelayed({
+        fadeOutOverlay()
+      }, 500)
     } else {
+      visibility = View.VISIBLE
       framePaint.color = Color.WHITE
       qrScannerWidth = 250.toPx
       qrScannerHeight = 250.toPx

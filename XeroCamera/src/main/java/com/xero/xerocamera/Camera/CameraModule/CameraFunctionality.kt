@@ -1,11 +1,10 @@
 package com.xero.xerocamera.Camera.CameraModule
 
 import android.content.Context
-import android.view.View
+import android.widget.SeekBar
 import androidx.annotation.FloatRange
 import androidx.camera.view.PreviewView
 import androidx.lifecycle.LifecycleOwner
-import com.xero.xerocamera.Scanner.ScannerModule.ScannerViewState
 import com.xero.xerocamera.XeroCamera
 
 sealed class FlashMode {
@@ -24,12 +23,14 @@ interface CameraFunctionality {
   fun startCamera()
   fun switchLensFacing(lensFacing: Int)
   fun takePhoto(
-	onSuccess: (imagePath: String) -> Unit,
-	onFailure: (exception: Exception) -> Unit
+	onSuccess: ((imagePath: String) -> Unit)? = null,
+	onFailure: ((exception: Exception) -> Unit)? = null
   )
+  fun enableScanner(isScanner : Boolean)
+  fun resetScanning()
   fun setFlashMode(flashMode : FlashMode)
   fun setZoomRatio(@FloatRange(from = 0.0 , to = 4.0 ) zoomRatio : Float )
-  fun enableScanner(isScanner : Boolean)
+  fun setSeekBarZoom(seekBar: SeekBar, onStart: (() -> Unit)? = null, onStop: (() -> Unit)? = null)
 
   interface CompileTimeFunctionality{
 	fun setContext(context : Context) : XeroCamera.Builder

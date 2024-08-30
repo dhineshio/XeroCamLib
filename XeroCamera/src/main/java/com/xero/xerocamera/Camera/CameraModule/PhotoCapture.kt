@@ -16,8 +16,8 @@ class PhotoCapture(
   private val captureSound: () -> Unit,
 ) {
   fun takePhoto(
-	onSuccess: (imagePath: String) -> Unit,
-	onFailure: (exception: Exception) -> Unit
+	onSuccess: ((imagePath: String) -> Unit)?,
+	onFailure: ((exception: Exception) -> Unit)?
   ) {
 	val rootDirectory =
 	  ContextCompat.getExternalFilesDirs(context, null).firstOrNull()?.let {
@@ -44,12 +44,12 @@ class PhotoCapture(
 
 		override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
 		  val imagePath = outputFileResults.savedUri?.path ?: "Path not Available"
-		  onSuccess.invoke(imagePath)
+		  onSuccess?.invoke(imagePath)
 		  Log.e("ImageCapture", "Image Capture has Done $imagePath")
 		}
 
 		override fun onError(exception: ImageCaptureException) {
-		  onFailure.invoke(exception)
+		  onFailure?.invoke(exception)
 		  Log.e("ImageCapture", "Image Capture Failed $exception")
 		}
 	  }
