@@ -13,8 +13,15 @@
         android:layout_height="match_parent"
         android:backgroundTint="#AEA9A9"
         tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="0dp"/>
+        tools:layout_editor_absoluteY="0dp">
 
+        <Button
+            android:id="@+id/disableScanner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            android:text="Scan off" />
+    </androidx.camera.view.PreviewView>
 
     <Button
         android:id="@+id/switchMode"
@@ -53,15 +60,6 @@
         android:layout_marginTop="50dp"
         android:text="Scan on"
         app:layout_constraintStart_toEndOf="@+id/disableScanner"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/disableScanner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:text="Scan off"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
 

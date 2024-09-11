@@ -3,6 +3,7 @@ package com.xero.cameramanager
 import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.Toast
@@ -52,6 +53,7 @@ class MainActivity : AppCompatActivity() {
 	  setContext(this@MainActivity)
 	  setLifecycleOwner(this@MainActivity)
 	  setCameraPreview(cameraPreview)
+		setLensFacing(CameraSelector.LENS_FACING_FRONT)
 	}.build()
 
 	PermissionX.init(this)
@@ -80,7 +82,12 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	captureButton.setOnClickListener {
-		xeroCamera.takePhoto()
+		xeroCamera.takePhoto(onSuccess = {
+			Log.e("MainActivity", "Success $it")
+		}, onFailure = {
+			Log.e("MainActivity", "failed $it")
+		}, false, "Thaagam Education","photo",
+		"Dhinesh")
 	}
 
 	scanOn.setOnClickListener {

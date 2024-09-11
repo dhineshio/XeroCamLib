@@ -11,48 +11,56 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class PhotoCapture(
-  private val context: Context,
-  private val imageCapture: ImageCapture,
-  private val captureSound: () -> Unit,
+	private val context: Context,
+	private val imageCapture: ImageCapture,
+	private val captureSound: () -> Unit,
 ) {
-  fun takePhoto(
-	onSuccess: ((imagePath: String) -> Unit)?,
-	onFailure: ((exception: Exception) -> Unit)?
-  ) {
-	val rootDirectory =
-	  ContextCompat.getExternalFilesDirs(context, null).firstOrNull()?.let {
-		File(
-		  Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
-		  "Demo"
+	fun takePhoto(
+		onSuccess: ((imagePath: String) -> Unit)?,
+		onFailure: ((exception: Exception) -> Unit)?,
+		useCache: Boolean,
+		directoryName: String,
+		fileName: String,
+		subDirectoryName : String
+	) {
+		val rootDirectory = if (useCache) {
+			context.cacheDir
+		} else {
+			ContextCompat.getExternalFilesDirs(context, null).firstOrNull()?.let {
+				File(
+					Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
+					directoryName
+				)
+			}?.apply {
+				if (!exists()) mkdirs()
+			}
+		}
+		val outputDirectory = File(rootDirectory, subDirectoryName).apply {
+			if (!exists()) mkdirs()
+		}
+		val formattedTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
+		val imageFile = File(outputDirectory, "${fileName}_$formattedTime.jpg")
+		val outputOptions = ImageCapture.OutputFileOptions.Builder(imageFile).build()
+		imageCapture.takePicture(
+			outputOptions, ContextCompat.getMainExecutor(context),
+			object : ImageCapture.OnImageSavedCallback {
+				override fun onCaptureStarted() {
+					super.onCaptureStarted()
+					captureSound.invoke()
+				}
+
+				override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+					val imagePath = outputFileResults.savedUri?.path ?: "Path not Available"
+					onSuccess?.invoke(imagePath)
+					Log.e("ImageCapture", "Image Capture has Done $imagePath")
+				}
+
+				override fun onError(exception: ImageCaptureException) {
+					onFailure?.invoke(exception)
+					Log.e("ImageCapture", "Image Capture Failed $exception")
+				}
+			}
 		)
-	  }?.apply {
-		if (!exists()) mkdirs()
-	  }
-	val outputDirectory = File(rootDirectory, "Photo").apply {
-	  if (!exists()) mkdirs()
 	}
-	val formattedTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
-	val imageFile = File(outputDirectory, "img_$formattedTime.jpg")
-	val outputOptions = ImageCapture.OutputFileOptions.Builder(imageFile).build()
-	imageCapture.takePicture(
-	  outputOptions, ContextCompat.getMainExecutor(context),
-	  object : ImageCapture.OnImageSavedCallback {
-		override fun onCaptureStarted() {
-		  super.onCaptureStarted()
-		  captureSound.invoke()
-		}
 
-		override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-		  val imagePath = outputFileResults.savedUri?.path ?: "Path not Available"
-		  onSuccess?.invoke(imagePath)
-		  Log.e("ImageCapture", "Image Capture has Done $imagePath")
-		}
-
-		override fun onError(exception: ImageCaptureException) {
-		  onFailure?.invoke(exception)
-		  Log.e("ImageCapture", "Image Capture Failed $exception")
-		}
-	  }
-	)
-  }
 }

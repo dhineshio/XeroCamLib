@@ -27,188 +27,205 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class XeroCamera private constructor(
-  private var context: Context,
-  private var owner: LifecycleOwner,
-  private var cameraCore: CameraCore,
+	private var context: Context,
+	private var owner: LifecycleOwner,
+	private var cameraCore: CameraCore,
 ) : CameraFunctionality, DefaultLifecycleObserver, CameraInitializer.ScannerCallback {
-  private lateinit var utility: Utility
-  private lateinit var cameraInitializer: CameraInitializer
-  private lateinit var photoCapture: PhotoCapture
-  private val imageCapture = ImageCapture.Builder().build()
+	private lateinit var utility: Utility
+	private lateinit var cameraInitializer: CameraInitializer
+	private lateinit var photoCapture: PhotoCapture
+	private val imageCapture = ImageCapture.Builder().build()
 
-  private val _scannerBarcode = MutableLiveData<String>()
-  val scannerBarcode: LiveData<String> get() = _scannerBarcode
+	private val _scannerBarcode = MutableLiveData<String>()
+	val scannerBarcode: LiveData<String> get() = _scannerBarcode
 
-  init {
-	owner.lifecycle.addObserver(this)
-	if (cameraCore.isScanner!!) {
-	  createScannerOverlay()
-	} else {
-	  endScannerOverlay()
-	}
-  }
-
-  override fun startCamera() {
-	utility = Utility(cameraCore)
-	cameraInitializer = CameraInitializer(context, owner, cameraCore, imageCapture, utility)
-	cameraInitializer.setScannerCallback(this)
-	photoCapture = PhotoCapture(context, imageCapture) { utility.captureSound() }
-	cameraInitializer.initializeCamera()
-  }
-
-  override fun switchLensFacing(lensFacing: Int) {
-	if (lensFacing == CameraSelector.LENS_FACING_FRONT) {
-	  enableScanner(false)
-	}
-	updateCore { it.copy(lensFacing = lensFacing) }
-  }
-
-  override fun takePhoto(
-	onSuccess: ((imagePath: String) -> Unit)?,
-	onFailure: ((exception: Exception) -> Unit)?
-  ) {
-	photoCapture.takePhoto(onSuccess, onFailure)
-  }
-
-  override fun enableScanner(isScanner: Boolean) {
-	if (isScanner != cameraCore.isScanner) {
-	  switchLensFacing(CameraSelector.LENS_FACING_BACK)
-	  updateCore { it.copy(isScanner = isScanner) }
-	}
-	owner.lifecycleScope.launch {
-	  withContext(Dispatchers.Main) {
-		if (isScanner && cameraCore.scannerOverlay == null) {
-		  createScannerOverlay()
-		  cameraCore.scannerOverlay!!.alpha = 0f
-		  cameraCore.scannerOverlay!!.animate()
-			.setDuration(500)
-			.alpha(1f)
-			.start()
-		} else if (!isScanner && cameraCore.scannerOverlay != null) {
-		  cameraCore.scannerOverlay!!.alpha = 1f
-		  cameraCore.scannerOverlay!!.animate()
-			.setDuration(500)
-			.alpha(0f)
-			.start()
-		  endScannerOverlay()
+	init {
+		owner.lifecycle.addObserver(this)
+		if (cameraCore.isScanner!!) {
+			createScannerOverlay()
+		} else {
+			endScannerOverlay()
 		}
-	  }
-	}
-  }
-
-  override fun resetScanning() {
-	_scannerBarcode.postValue(null)
-	cameraInitializer.resetScanning()
-  }
-
-  override fun setFlashMode(flashMode: FlashMode) {
-	cameraInitializer.setFlashMode(flashMode)
-  }
-
-  override fun setZoomRatio(@FloatRange(from = 0.0, to = 4.0) zoomRatio: Float) {
-	cameraInitializer.setZoom(zoomRatio)
-  }
-
-  override fun setSeekBarZoom(
-	seekBar: SeekBar,
-	onStart: (() -> Unit)?,
-	onStop: (() -> Unit)?
-  ) {
-	seekBar.max = 100
-	seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-	  override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-		val minValue = 0.0f
-		val maxValue = 4.0f
-		val currentValue = minValue + (progress / 100.0f) * (maxValue - minValue)
-		setZoomRatio(currentValue)
-	  }
-	  override fun onStartTrackingTouch(seekBar: SeekBar?) {
-		onStart?.invoke()
-	  }
-	  override fun onStopTrackingTouch(seekBar: SeekBar?) {
-		onStop?.invoke()
-	  }
-	})
-  }
-
-  private fun createScannerOverlay() {
-	cameraCore.scannerOverlay = ScannerOverlay(
-	  cameraCore.cameraPreview,
-	  HapticFeedbackConstants.KEYBOARD_TAP,
-	  context
-	).apply {
-	  layoutParams = FrameLayout.LayoutParams(
-		FrameLayout.LayoutParams.MATCH_PARENT,
-		FrameLayout.LayoutParams.MATCH_PARENT
-	  )
-	}
-	(cameraCore.cameraPreview!!.parent as? ViewGroup)?.addView(cameraCore.scannerOverlay)
-  }
-
-  private fun endScannerOverlay() {
-	(cameraCore.cameraPreview!!.parent as? ViewGroup)?.removeView(cameraCore.scannerOverlay)
-	cameraCore.scannerOverlay = null
-  }
-
-  private fun updateCore(update: (CameraCore) -> CameraCore) {
-	cameraCore = update(cameraCore)
-	startCamera()
-  }
-
-  class Builder : CameraFunctionality.CompileTimeFunctionality {
-	private var context: Context? = null
-	private var owner: LifecycleOwner? = null
-	private var cameraCore: CameraCore = CameraCore()
-
-	override fun setContext(context: Context) =
-	  apply { this.context = context }
-
-	override fun setCameraPreview(cameraPreview: PreviewView) =
-	  apply { cameraCore.cameraPreview = cameraPreview }
-
-	override fun setLifecycleOwner(owner: LifecycleOwner) =
-	  apply { this.owner = owner }
-
-	override fun enableScanner(isScanner: Boolean) = apply {
-	  cameraCore.isScanner = isScanner
 	}
 
-	fun build(): XeroCamera {
-	  requireNotNull(context) { "Context must be set" }
-	  requireNotNull(owner) { "LifeCycle owner must be set" }
-	  requireNotNull(cameraCore.cameraPreview) { "Camera Preview must be set" }
-	  return XeroCamera(context!!, owner!!, cameraCore)
+	override fun startCamera() {
+		utility = Utility(cameraCore)
+		cameraInitializer = CameraInitializer(context, owner, cameraCore, imageCapture, utility)
+		cameraInitializer.setScannerCallback(this)
+		photoCapture = PhotoCapture(context, imageCapture) { utility.captureSound() }
+		cameraInitializer.initializeCamera()
 	}
-  }
 
-  override fun onScannerStateChanged(barcode: String) {
-	_scannerBarcode.postValue(barcode)
-  }
-
-  override fun onResume(owner: LifecycleOwner) {
-	super.onResume(owner)
-	Log.e("XeroCamera", "OnResume")
-	if (::cameraInitializer.isInitialized) {
-	  startCamera()
+	override fun switchLensFacing(lensFacing: Int) {
+		if (lensFacing == CameraSelector.LENS_FACING_FRONT) {
+			enableScanner(false)
+		}
+		updateCore { it.copy(lensFacing = lensFacing) }
 	}
-  }
 
-  override fun onPause(owner: LifecycleOwner) {
-	super.onPause(owner)
-	Log.e("XeroCamera", "OnPause")
-	if (::cameraInitializer.isInitialized) {
-	  cameraInitializer.shutdownCamera()
+	override fun takePhoto(
+		onSuccess: ((imagePath: String) -> Unit)?,
+		onFailure: ((exception: Exception) -> Unit)?,
+		useCache: Boolean?,
+		directoryName: String?,
+		fileName: String?,
+		subDirectoryName: String?
+	) {
+		photoCapture.takePhoto(
+			onSuccess,
+			onFailure,
+			useCache!!,
+			directoryName!!,
+			fileName!!,
+			subDirectoryName!!
+		)
 	}
-  }
 
-  override fun onDestroy(owner: LifecycleOwner) {
-	super.onDestroy(owner)
-	Log.e("XeroCamera", "OnDestroy")
-	owner.lifecycle.removeObserver(this)
-  }
+	override fun enableScanner(isScanner: Boolean) {
+		if (isScanner != cameraCore.isScanner) {
+			switchLensFacing(CameraSelector.LENS_FACING_BACK)
+			updateCore { it.copy(isScanner = isScanner) }
+		}
+		owner.lifecycleScope.launch {
+			withContext(Dispatchers.Main) {
+				if (isScanner && cameraCore.scannerOverlay == null) {
+					createScannerOverlay()
+					cameraCore.scannerOverlay!!.alpha = 0f
+					cameraCore.scannerOverlay!!.animate()
+						.setDuration(500)
+						.alpha(1f)
+						.start()
+				} else if (!isScanner && cameraCore.scannerOverlay != null) {
+					cameraCore.scannerOverlay!!.alpha = 1f
+					cameraCore.scannerOverlay!!.animate()
+						.setDuration(500)
+						.alpha(0f)
+						.start()
+					endScannerOverlay()
+				}
+			}
+		}
+	}
 
-  companion object {
-	fun builder() = Builder()
-  }
+	override fun resetScanning() {
+		_scannerBarcode.postValue(null)
+		cameraInitializer.resetScanning()
+	}
+
+	override fun setFlashMode(flashMode: FlashMode) {
+		cameraInitializer.setFlashMode(flashMode)
+	}
+
+	override fun setZoomRatio(@FloatRange(from = 0.0, to = 4.0) zoomRatio: Float) {
+		cameraInitializer.setZoom(zoomRatio)
+	}
+
+	override fun setSeekBarZoom(
+		seekBar: SeekBar,
+		onStart: (() -> Unit)?,
+		onStop: (() -> Unit)?
+	) {
+		seekBar.max = 100
+		seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+			override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+				val minValue = 0.0f
+				val maxValue = 4.0f
+				val currentValue = minValue + (progress / 100.0f) * (maxValue - minValue)
+				setZoomRatio(currentValue)
+			}
+
+			override fun onStartTrackingTouch(seekBar: SeekBar?) {
+				onStart?.invoke()
+			}
+
+			override fun onStopTrackingTouch(seekBar: SeekBar?) {
+				onStop?.invoke()
+			}
+		})
+	}
+
+	private fun createScannerOverlay() {
+		cameraCore.scannerOverlay = ScannerOverlay(
+			cameraCore.cameraPreview,
+			HapticFeedbackConstants.KEYBOARD_TAP,
+			context
+		).apply {
+			layoutParams = FrameLayout.LayoutParams(
+				FrameLayout.LayoutParams.MATCH_PARENT,
+				FrameLayout.LayoutParams.MATCH_PARENT
+			)
+		}
+		(cameraCore.cameraPreview!!.parent as? ViewGroup)?.addView(cameraCore.scannerOverlay)
+	}
+
+	private fun endScannerOverlay() {
+		(cameraCore.cameraPreview!!.parent as? ViewGroup)?.removeView(cameraCore.scannerOverlay)
+		cameraCore.scannerOverlay = null
+	}
+
+	private fun updateCore(update: (CameraCore) -> CameraCore) {
+		cameraCore = update(cameraCore)
+		startCamera()
+	}
+
+	class Builder : CameraFunctionality.CompileTimeFunctionality {
+		private var context: Context? = null
+		private var owner: LifecycleOwner? = null
+		private var cameraCore: CameraCore = CameraCore()
+
+		override fun setContext(context: Context) =
+			apply { this.context = context }
+
+		override fun setCameraPreview(cameraPreview: PreviewView) =
+			apply { cameraCore.cameraPreview = cameraPreview }
+
+		override fun setLifecycleOwner(owner: LifecycleOwner) =
+			apply { this.owner = owner }
+
+		override fun enableScanner(isScanner: Boolean) = apply {
+			cameraCore.isScanner = isScanner
+		}
+
+		override fun setLensFacing(lensFacing: Int) = apply {
+			cameraCore.lensFacing = lensFacing
+		}
+
+		fun build(): XeroCamera {
+			requireNotNull(context) { "Context must be set" }
+			requireNotNull(owner) { "LifeCycle owner must be set" }
+			requireNotNull(cameraCore.cameraPreview) { "Camera Preview must be set" }
+			return XeroCamera(context!!, owner!!, cameraCore)
+		}
+	}
+
+	override fun onScannerStateChanged(barcode: String) {
+		_scannerBarcode.postValue(barcode)
+	}
+
+	override fun onResume(owner: LifecycleOwner) {
+		super.onResume(owner)
+		Log.e("XeroCamera", "OnResume")
+		if (::cameraInitializer.isInitialized) {
+			startCamera()
+		}
+	}
+
+	override fun onPause(owner: LifecycleOwner) {
+		super.onPause(owner)
+		Log.e("XeroCamera", "OnPause")
+		if (::cameraInitializer.isInitialized) {
+			cameraInitializer.shutdownCamera()
+		}
+	}
+
+	override fun onDestroy(owner: LifecycleOwner) {
+		super.onDestroy(owner)
+		Log.e("XeroCamera", "OnDestroy")
+		owner.lifecycle.removeObserver(this)
+	}
+
+	companion object {
+		fun builder() = Builder()
+	}
 }
 

@@ -11,7 +11,7 @@ import com.xero.xerocamera.Utility.Utility
 
 data class CameraCore(
   var cameraPreview: PreviewView? = null,
-  val lensFacing: Int = CameraSelector.LENS_FACING_BACK,
+  var lensFacing: Int = CameraSelector.LENS_FACING_BACK,
   var isScanner: Boolean? = false,
   var scannerOverlay: ScannerOverlay? = null,
 )
