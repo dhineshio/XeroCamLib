@@ -1,7 +1,9 @@
 package com.xero.xerocamera
 
+import android.app.Activity
 import android.content.Context
 import android.util.Log
+import android.util.Size
 import android.view.HapticFeedbackConstants
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -29,12 +31,13 @@ import kotlinx.coroutines.withContext
 class XeroCamera private constructor(
 	private var context: Context,
 	private var owner: LifecycleOwner,
+	private var activity: Activity,
 	private var cameraCore: CameraCore,
 ) : CameraFunctionality, DefaultLifecycleObserver, CameraInitializer.ScannerCallback {
 	private lateinit var utility: Utility
 	private lateinit var cameraInitializer: CameraInitializer
 	private lateinit var photoCapture: PhotoCapture
-	private val imageCapture = ImageCapture.Builder().build()
+	private val imageCapture = ImageCapture.Builder().setTargetResolution(getDesiredResolution()).build()
 
 	private val _scannerBarcode = MutableLiveData<String>()
 	val scannerBarcode: LiveData<String> get() = _scannerBarcode
@@ -62,6 +65,19 @@ class XeroCamera private constructor(
 		}
 		updateCore { it.copy(lensFacing = lensFacing) }
 	}
+
+	fun getDesiredResolution(): Size {
+		val ratio = 1.1f
+		val displayMetric = activity.resources.displayMetrics
+		val screenWidthDp = displayMetric.widthPixels / displayMetric.density
+		val screenHeightDp = displayMetric.heightPixels / displayMetric.density
+		val desireWidthDp = screenWidthDp * ratio
+		val desiredHeightDp = screenHeightDp * ratio
+		val desiredWidthPx = (desireWidthDp * displayMetric.density).toInt()
+		val desiredHeightPx = (desiredHeightDp * displayMetric.density).toInt()
+		return Size(desiredWidthPx, desiredHeightPx)
+	}
+
 
 	override fun takePhoto(
 		onSuccess: ((imagePath: String) -> Unit)?,
@@ -171,10 +187,15 @@ class XeroCamera private constructor(
 	class Builder : CameraFunctionality.CompileTimeFunctionality {
 		private var context: Context? = null
 		private var owner: LifecycleOwner? = null
+		private var activity: Activity? = null
 		private var cameraCore: CameraCore = CameraCore()
 
 		override fun setContext(context: Context) =
 			apply { this.context = context }
+
+		fun setActivity(activity: Activity) = apply {
+			this.activity = activity
+		}
 
 		override fun setCameraPreview(cameraPreview: PreviewView) =
 			apply { cameraCore.cameraPreview = cameraPreview }
@@ -193,8 +214,9 @@ class XeroCamera private constructor(
 		fun build(): XeroCamera {
 			requireNotNull(context) { "Context must be set" }
 			requireNotNull(owner) { "LifeCycle owner must be set" }
+			requireNotNull(activity) { "Activity must be set" }
 			requireNotNull(cameraCore.cameraPreview) { "Camera Preview must be set" }
-			return XeroCamera(context!!, owner!!, cameraCore)
+			return XeroCamera(context!!, owner!!, activity!!, cameraCore)
 		}
 	}
 

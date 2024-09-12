@@ -1,8 +1,10 @@
 package com.xero.xerocamera.Camera.CameraModule
 
+import android.app.Activity
 import android.content.Context
 import android.os.Environment
 import android.util.Log
+import android.util.Size
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.core.content.ContextCompat
