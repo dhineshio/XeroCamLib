@@ -13,6 +13,8 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.core.UseCase
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.video.Recorder
+import androidx.camera.video.VideoCapture
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.xero.xerocamera.Camera.Models.CameraCore
@@ -27,6 +29,7 @@ class CameraInitializer(
 	private val owner: LifecycleOwner,
 	private val cameraCore: CameraCore,
 	private var imageCapture: ImageCapture,
+	private var videoCapture: VideoCapture<Recorder>,
 	private val utility: Utility
 ) {
 	interface ScannerCallback {
@@ -97,6 +100,7 @@ class CameraInitializer(
 		cameraProvider.unbindAll()
 		val useCases = mutableListOf<UseCase>()
 		useCases.add(imageCapture)
+		useCases.add(videoCapture)
 		if (cameraCore.isScanner!!) {
 			scannerAnalyzer = ScannerAnalyzer(cameraCore.scannerOverlay!!) { state, barcode ->
 				when (state) {
@@ -143,22 +147,7 @@ class CameraInitializer(
 			}
 	}
 
-//  private fun bindVideoCapture(): VideoCapture<Recorder> {
-//	return VideoCapture.withOutput(bindRecorder())
-//  }
-//
-//  private fun bindRecorder(): Recorder {
-//	return Recorder.Builder().also {
-//	  it.setQualitySelector(
-//		QualitySelector.from(
-//		  Quality.UHD,
-//		  FallbackStrategy.lowerQualityOrHigherThan(Quality.SD)
-//		)
-//	  )
-//	  it.setAspectRatio(AspectRatio.RATIO_16_9)
-//	  it.setTargetVideoEncodingBitRate(5000000)
-//	}.build()
-//  }
+
 
 	fun shutdownCamera() {
 		cameraProvider.unbindAll()

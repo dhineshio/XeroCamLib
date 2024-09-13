@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.SeekBar
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
@@ -29,6 +30,7 @@ class MainActivity : AppCompatActivity() {
 
 	private val requiredPermissions = mutableListOf(
 		Manifest.permission.CAMERA,
+		Manifest.permission.RECORD_AUDIO
 	)
 	private var res: String? = null
 
@@ -62,7 +64,6 @@ class MainActivity : AppCompatActivity() {
 			setLifecycleOwner(this@MainActivity)
 			setActivity(this@MainActivity)
 			setCameraPreview(cameraPreview)
-			setLensFacing(CameraSelector.LENS_FACING_FRONT)
 		}.build()
 
 		PermissionX.init(this)
@@ -90,14 +91,28 @@ class MainActivity : AppCompatActivity() {
 			res = barcode
 		}
 
+//		captureButton.setOnClickListener {
+//			xeroCamera.takePhoto(onSuccess = {
+//				Log.e("MainActivity", "Success $it")
+//			}, onFailure = {
+//				Log.e("MainActivity", "failed $it")
+//			}, false, "Thaagam Education", "photo",
+//				"Dhinesh"
+//			)
+//		}
+
 		captureButton.setOnClickListener {
-			xeroCamera.takePhoto(onSuccess = {
-				Log.e("MainActivity", "Success $it")
-			}, onFailure = {
-				Log.e("MainActivity", "failed $it")
-			}, false, "Thaagam Education", "photo",
-				"Dhinesh"
-			)
+			xeroCamera.startVideo(onStart = {
+				Toast.makeText(this, "Recoring starteed", Toast.LENGTH_SHORT).show()
+			}, onSuccess = {
+				Toast.makeText(this, "Recoring success $it", Toast.LENGTH_SHORT).show()
+			}, onError = {
+				Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show()
+			})
+		}
+
+		switchMode.setOnClickListener {
+			xeroCamera.stopVideo()
 		}
 
 		scanOn.setOnClickListener {
@@ -119,9 +134,9 @@ class MainActivity : AppCompatActivity() {
 
 		xeroCamera.setSeekBarZoom(seekBar = zoom)
 
-		switchMode.setOnClickListener {
-			xeroCamera.switchLensFacing(CameraSelector.LENS_FACING_FRONT)
-		}
+//		switchMode.setOnClickListener {
+//			xeroCamera.switchLensFacing(CameraSelector.LENS_FACING_FRONT)
+//		}
 		frontCamera.setOnClickListener {
 			xeroCamera.switchLensFacing(CameraSelector.LENS_FACING_BACK)
 		}

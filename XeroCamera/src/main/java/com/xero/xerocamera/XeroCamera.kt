@@ -9,8 +9,13 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.SeekBar
 import androidx.annotation.FloatRange
+import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
+import androidx.camera.video.FallbackStrategy
+import androidx.camera.video.Quality
+import androidx.camera.video.QualitySelector
+import androidx.camera.video.Recorder
 import androidx.camera.view.PreviewView
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -21,6 +26,7 @@ import com.xero.xerocamera.Camera.CameraModule.CameraFunctionality
 import com.xero.xerocamera.Camera.CameraModule.CameraInitializer
 import com.xero.xerocamera.Camera.CameraModule.FlashMode
 import com.xero.xerocamera.Camera.CameraModule.PhotoCapture
+import com.xero.xerocamera.Camera.CameraModule.VideoCapture
 import com.xero.xerocamera.Camera.Models.CameraCore
 import com.xero.xerocamera.Scanner.ScannerModule.ScannerOverlay
 import com.xero.xerocamera.Utility.Utility
@@ -37,7 +43,19 @@ class XeroCamera private constructor(
 	private lateinit var utility: Utility
 	private lateinit var cameraInitializer: CameraInitializer
 	private lateinit var photoCapture: PhotoCapture
-	private val imageCapture = ImageCapture.Builder().setTargetResolution(getDesiredResolution()).build()
+	private lateinit var videoCapture: VideoCapture
+	private val imageCapture =
+		ImageCapture.Builder().setTargetResolution(getDesiredResolution()).build()
+	private val recordVideo = androidx.camera.video.VideoCapture.withOutput(Recorder.Builder().also {
+		it.setQualitySelector(
+			QualitySelector.from(
+				Quality.UHD,
+				FallbackStrategy.lowerQualityOrHigherThan(Quality.SD)
+			)
+		)
+		it.setAspectRatio(AspectRatio.RATIO_16_9)
+		it.setTargetVideoEncodingBitRate(5000000)
+	}.build())
 
 	private val _scannerBarcode = MutableLiveData<String>()
 	val scannerBarcode: LiveData<String> get() = _scannerBarcode
@@ -53,9 +71,10 @@ class XeroCamera private constructor(
 
 	override fun startCamera() {
 		utility = Utility(cameraCore)
-		cameraInitializer = CameraInitializer(context, owner, cameraCore, imageCapture, utility)
+		cameraInitializer = CameraInitializer(context, owner, cameraCore, imageCapture,recordVideo, utility)
 		cameraInitializer.setScannerCallback(this)
 		photoCapture = PhotoCapture(context, imageCapture) { utility.captureSound() }
+		videoCapture = VideoCapture(context, recordVideo)
 		cameraInitializer.initializeCamera()
 	}
 
@@ -66,7 +85,7 @@ class XeroCamera private constructor(
 		updateCore { it.copy(lensFacing = lensFacing) }
 	}
 
-	fun getDesiredResolution(): Size {
+	private fun getDesiredResolution(): Size {
 		val ratio = 1.1f
 		val displayMetric = activity.resources.displayMetrics
 		val screenWidthDp = displayMetric.widthPixels / displayMetric.density
@@ -78,6 +97,20 @@ class XeroCamera private constructor(
 		return Size(desiredWidthPx, desiredHeightPx)
 	}
 
+	fun startVideo(
+		onStart: (() -> Unit?)? = null,
+		onSuccess: ((videoPath: String) -> Unit?)? = null,
+		onError: (() -> Unit?)? = null,
+		directoryName: String? = "XeroCam",
+		fileName: String? = "dj",
+		subDirectoryName: String? = "video",
+	) {
+		videoCapture.startVideo(directoryName!!, fileName!!, subDirectoryName!!, onStart, onSuccess, onError)
+	}
+
+	fun stopVideo() {
+		videoCapture.stopVideo()
+	}
 
 	override fun takePhoto(
 		onSuccess: ((imagePath: String) -> Unit)?,
