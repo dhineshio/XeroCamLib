@@ -52,7 +52,6 @@ class VideoCapture(
 		val videoFile = File(outputDirectory, "${fileName}_${formattedTime}.mp4")
 		val outputOptions = FileOutputOptions.Builder(videoFile).build()
 
-
 		try {
 			recording = videoCapture.output.prepareRecording(context, outputOptions).apply {
 				if (ActivityCompat.checkSelfPermission(

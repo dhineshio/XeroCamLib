@@ -4,9 +4,11 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.widget.Button
 import android.widget.SeekBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +17,7 @@ import androidx.camera.view.PreviewView
 import com.permissionx.guolindev.PermissionX
 import com.xero.xerocamera.Camera.CameraModule.FlashMode
 import com.xero.xerocamera.XeroCamera
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 	private lateinit var cameraPreview: PreviewView
@@ -27,12 +30,18 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var flashOff: Button
 	private lateinit var torch: Button
 	private lateinit var zoom: SeekBar
+	private lateinit var timer : TextView
 
 	private val requiredPermissions = mutableListOf(
 		Manifest.permission.CAMERA,
 		Manifest.permission.RECORD_AUDIO
 	)
 	private var res: String? = null
+
+	//timer set variable
+	private var captureTime = 0L
+	private var isRunning = false
+	var handler: Handler = Handler()
 
 	@SuppressLint("MissingInflatedId")
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,7 +66,7 @@ class MainActivity : AppCompatActivity() {
 		flashOff = findViewById(R.id.flashOff)
 		torch = findViewById(R.id.torch)
 		zoom = findViewById(R.id.seekBar2)
-
+		timer = findViewById(R.id.timer)
 
 		val xeroCamera = XeroCamera.builder().apply {
 			setContext(this@MainActivity)
@@ -103,28 +112,29 @@ class MainActivity : AppCompatActivity() {
 
 		captureButton.setOnClickListener {
 			xeroCamera.startVideo(onStart = {
-				Toast.makeText(this, "Recoring starteed", Toast.LENGTH_SHORT).show()
+				startTimer()
+				Toast.makeText(this, "Recording started", Toast.LENGTH_SHORT).show()
 			}, onSuccess = {
-				Toast.makeText(this, "Recoring success $it", Toast.LENGTH_SHORT).show()
+				Toast.makeText(this, "Recording success $it", Toast.LENGTH_SHORT).show()
 			}, onError = {
 				Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show()
 			})
 		}
 
 		switchMode.setOnClickListener {
+			stopTimer()
 			xeroCamera.stopVideo()
 		}
 
 		scanOn.setOnClickListener {
-			xeroCamera.enableScanner(true)
+			pauseTimer()
+			xeroCamera.pauseVideo()
+		}
+		scanOff.setOnClickListener {
+			resumeTimer()
+			xeroCamera.resumeVideo()
 		}
 
-		scanOff.setOnClickListener {
-			xeroCamera.resetScanning()
-		}
-		flashOn.setOnClickListener {
-			xeroCamera.setFlashMode(FlashMode.FlashOn)
-		}
 		flashOff.setOnClickListener {
 			xeroCamera.setFlashMode(FlashMode.FlashOff)
 		}
@@ -134,11 +144,44 @@ class MainActivity : AppCompatActivity() {
 
 		xeroCamera.setSeekBarZoom(seekBar = zoom)
 
-//		switchMode.setOnClickListener {
-//			xeroCamera.switchLensFacing(CameraSelector.LENS_FACING_FRONT)
-//		}
 		frontCamera.setOnClickListener {
 			xeroCamera.switchLensFacing(CameraSelector.LENS_FACING_BACK)
 		}
+	}
+
+	private val updateCaptureTime: Runnable = object : Runnable {
+		override fun run() {
+			if (isRunning) {
+				val minutes = TimeUnit.MILLISECONDS.toMinutes(captureTime)
+				val seconds = TimeUnit.MILLISECONDS.toSeconds(captureTime) % 60
+				timer.text=String.format("%02d:%02d", minutes, seconds)
+				captureTime += 100 // Increment by 100ms
+				handler.postDelayed(this, 100)
+			}
+		}
+	}
+
+	private fun startTimer() {
+		if (!isRunning) {
+			isRunning = true
+			handler.post(updateCaptureTime)
+		}
+	}
+
+	private fun pauseTimer() {
+		isRunning = false
+	}
+
+	private fun resumeTimer() {
+		if (!isRunning) {
+			isRunning = true
+			handler.post(updateCaptureTime)
+		}
+	}
+
+	private fun stopTimer() {
+		isRunning = false
+		captureTime = 0L
+		timer.text= "00:00"
 	}
 }
