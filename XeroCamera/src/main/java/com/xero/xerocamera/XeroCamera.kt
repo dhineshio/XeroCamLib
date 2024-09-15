@@ -118,16 +118,20 @@ class XeroCamera private constructor(
   override fun photoCapture(
 	onSuccess: ((imagePath: String) -> Unit)?,
 	onFailure: ((exception: Exception) -> Unit)?,
+	enableSound: Boolean?,
 	directoryName: String?,
 	fileName: String?,
 	subDirectoryName: String?
   ) {
-	photoCapture.takePhoto(onSuccess, onFailure, false, directoryName!!, fileName!!, subDirectoryName!!)
+		videoCapture.capturePhoto {
+			photoCapture.takePhoto(onSuccess, onFailure, enableSound!!,false, directoryName!!, fileName!!, subDirectoryName!!)
+		}
   }
 
   override fun takePhoto(
 	onSuccess: ((imagePath: String) -> Unit)?,
 	onFailure: ((exception: Exception) -> Unit)?,
+	enableSound : Boolean?,
 	useCache: Boolean?,
 	directoryName: String?,
 	fileName: String?,
@@ -136,6 +140,7 @@ class XeroCamera private constructor(
 	photoCapture.takePhoto(
 	  onSuccess,
 	  onFailure,
+		enableSound!!,
 	  useCache!!,
 	  directoryName!!,
 	  fileName!!,

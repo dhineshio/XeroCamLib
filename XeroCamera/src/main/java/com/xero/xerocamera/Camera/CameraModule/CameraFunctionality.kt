@@ -25,6 +25,7 @@ interface CameraFunctionality {
   fun takePhoto(
 	onSuccess: ((imagePath: String) -> Unit)? = null,
 	onFailure: ((exception: Exception) -> Unit)? = null,
+	enableSound : Boolean? = true,
 	useCache: Boolean? = false,
 	directoryName: String? = "Demo",
 	fileName: String? = "img",
@@ -44,6 +45,7 @@ interface CameraFunctionality {
   fun photoCapture(
 	onSuccess: ((imagePath: String) -> Unit)? = null,
 	onFailure: ((exception: Exception) -> Unit)? = null,
+	enableSound: Boolean? = true,
 	directoryName: String? = "Demo",
 	fileName: String? = "img",
 	subDirectoryName: String? ="photo"

@@ -18,6 +18,7 @@ class PhotoCapture(
 	fun takePhoto(
 		onSuccess: ((imagePath: String) -> Unit)?,
 		onFailure: ((exception: Exception) -> Unit)?,
+		enableSound: Boolean,
 		useCache: Boolean,
 		directoryName: String,
 		fileName: String,
@@ -46,7 +47,9 @@ class PhotoCapture(
 			object : ImageCapture.OnImageSavedCallback {
 				override fun onCaptureStarted() {
 					super.onCaptureStarted()
-					captureSound.invoke()
+					if (enableSound) {
+						captureSound.invoke()
+					}
 				}
 
 				override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {

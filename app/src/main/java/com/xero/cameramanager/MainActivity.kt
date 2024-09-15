@@ -5,14 +5,12 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.CameraSelector
 import androidx.camera.view.PreviewView
 import com.permissionx.guolindev.PermissionX
 import com.xero.xerocamera.Camera.CameraModule.FlashMode
@@ -30,7 +28,7 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var flashOff: Button
 	private lateinit var torch: Button
 	private lateinit var zoom: SeekBar
-	private lateinit var timer : TextView
+	private lateinit var timer: TextView
 
 	private val requiredPermissions = mutableListOf(
 		Manifest.permission.CAMERA,
@@ -134,7 +132,11 @@ class MainActivity : AppCompatActivity() {
 			resumeTimer()
 			xeroCamera.resumeVideo()
 		}
-
+		frontCamera.setOnClickListener {
+			xeroCamera.photoCapture(onSuccess = {
+				Toast.makeText(this, "Capture Success : $it", Toast.LENGTH_SHORT).show()
+			}, onFailure = null, true)
+		}
 		flashOff.setOnClickListener {
 			xeroCamera.setFlashMode(FlashMode.FlashOff)
 		}
@@ -143,10 +145,10 @@ class MainActivity : AppCompatActivity() {
 		}
 
 		xeroCamera.setSeekBarZoom(seekBar = zoom)
-
-		frontCamera.setOnClickListener {
-			xeroCamera.switchLensFacing(CameraSelector.LENS_FACING_BACK)
-		}
+		
+//		frontCamera.setOnClickListener {
+//			xeroCamera.switchLensFacing(CameraSelector.LENS_FACING_BACK)
+//		}
 	}
 
 	private val updateCaptureTime: Runnable = object : Runnable {
@@ -154,7 +156,7 @@ class MainActivity : AppCompatActivity() {
 			if (isRunning) {
 				val minutes = TimeUnit.MILLISECONDS.toMinutes(captureTime)
 				val seconds = TimeUnit.MILLISECONDS.toSeconds(captureTime) % 60
-				timer.text=String.format("%02d:%02d", minutes, seconds)
+				timer.text = String.format("%02d:%02d", minutes, seconds)
 				captureTime += 100 // Increment by 100ms
 				handler.postDelayed(this, 100)
 			}
@@ -182,6 +184,6 @@ class MainActivity : AppCompatActivity() {
 	private fun stopTimer() {
 		isRunning = false
 		captureTime = 0L
-		timer.text= "00:00"
+		timer.text = "00:00"
 	}
 }
