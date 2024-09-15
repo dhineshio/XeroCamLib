@@ -2,6 +2,7 @@ package com.xero.xerocamera.Camera.CameraModule
 
 import android.content.Context
 import android.widget.SeekBar
+import android.widget.TextView
 import androidx.annotation.FloatRange
 import androidx.camera.view.PreviewView
 import androidx.lifecycle.LifecycleOwner
@@ -32,12 +33,13 @@ interface CameraFunctionality {
 	subDirectoryName: String? = "Photo",
   )
   fun startVideo(
-	onStart: (() -> Unit?)? = null,
-	onSuccess: ((videoPath: String) -> Unit?)? = null,
-	onError: (() -> Unit?)? = null,
-	directoryName: String? = "Demo",
-	fileName: String? = "vid",
-	subDirectoryName: String? = "Video",
+		onStart: (() -> Unit?)? = null,
+		onSuccess: ((videoPath: String) -> Unit?)? = null,
+		onError: (() -> Unit?)? = null,
+		timerView: TextView,
+		directoryName: String? = "Demo",
+		fileName: String? = "vid",
+		subDirectoryName: String? = "Video",
   )
   fun stopVideo()
   fun pauseVideo()

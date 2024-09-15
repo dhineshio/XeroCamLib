@@ -4,7 +4,9 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Environment
+import android.os.Handler
 import android.util.Log
+import android.widget.TextView
 import android.widget.Toast
 import androidx.camera.video.FileOutputOptions
 import androidx.camera.video.Recorder
@@ -16,6 +18,7 @@ import androidx.core.content.ContextCompat
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.TimeUnit
 
 class VideoCapture(
 	private val context: Context,
@@ -24,14 +27,24 @@ class VideoCapture(
 	private var recording: Recording? = null
 	private var isPaused = false
 
+	//timer set variable
+	private lateinit var timerView : TextView
+	private var captureTime = 0L
+	private var isRunning = false
+	var handler: Handler = Handler()
+
 	fun startVideo(
 		directoryName: String,
 		fileName: String,
 		subDirectoryName: String,
+		timerView : TextView? = null,
 		onStart: (() -> Unit?)? = null,
 		onSuccess: ((videoPath: String) -> Unit?)? = null,
 		onError: (() -> Unit?)? = null,
 	) {
+		if (timerView != null) {
+			this.timerView = timerView
+		}
 		if (recording != null) {
 			Toast.makeText(context, "Recording already in progress", Toast.LENGTH_SHORT).show()
 			return
@@ -66,6 +79,7 @@ class VideoCapture(
 			}.start(ContextCompat.getMainExecutor(context)) { recordEvent ->
 				when (recordEvent) {
 					is VideoRecordEvent.Start -> {
+						startTimer()
 						onStart?.invoke()
 					}
 
@@ -88,6 +102,7 @@ class VideoCapture(
 
 	fun pauseVideo() {
 		if (recording != null && !isPaused) {
+			pauseTimer()
 			recording?.pause()
 			isPaused = true
 		}
@@ -95,6 +110,7 @@ class VideoCapture(
 
 	fun resumeVideo() {
 		if (recording != null && isPaused) {
+			resumeTimer()
 			recording?.resume()
 			isPaused = false
 		}
@@ -102,6 +118,7 @@ class VideoCapture(
 
 	fun stopVideo() {
 		if (recording != null) {
+			stopTimer()
 			recording?.stop()
 			recording = null
 		} else {
@@ -116,4 +133,41 @@ class VideoCapture(
 			Toast.makeText(context, "Make Sure Video Has Started...", Toast.LENGTH_SHORT).show()
 		}
 	}
+
+	private val updateCaptureTime: Runnable = object : Runnable {
+		override fun run() {
+			if (isRunning) {
+				val minutes = TimeUnit.MILLISECONDS.toMinutes(captureTime)
+				val seconds = TimeUnit.MILLISECONDS.toSeconds(captureTime) % 60
+				timerView.text = String.format("%02d:%02d", minutes, seconds)
+				captureTime += 100 // Increment by 100ms
+				handler.postDelayed(this, 100)
+			}
+		}
+	}
+
+	private fun startTimer() {
+		if (!isRunning) {
+			isRunning = true
+			handler.post(updateCaptureTime)
+		}
+	}
+
+	private fun pauseTimer() {
+		isRunning = false
+	}
+
+	private fun resumeTimer() {
+			if (!isRunning) {
+				isRunning = true
+				handler.post(updateCaptureTime)
+			}
+	}
+
+	private fun stopTimer() {
+		isRunning = false
+		captureTime = 0L
+		timerView.text = "00:00"
+	}
+
 }

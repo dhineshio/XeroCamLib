@@ -8,6 +8,7 @@ import android.view.HapticFeedbackConstants
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.SeekBar
+import android.widget.TextView
 import androidx.annotation.FloatRange
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
@@ -89,6 +90,7 @@ class XeroCamera private constructor(
 	onStart: (() -> Unit?)?,
 	onSuccess: ((videoPath: String) -> Unit?)?,
 	onError: (() -> Unit?)?,
+	timerView: TextView,
 	directoryName: String?,
 	fileName: String?,
 	subDirectoryName: String?
@@ -97,6 +99,7 @@ class XeroCamera private constructor(
 	  directoryName!!,
 	  fileName!!,
 	  subDirectoryName!!,
+		timerView,
 	  onStart,
 	  onSuccess,
 	  onError

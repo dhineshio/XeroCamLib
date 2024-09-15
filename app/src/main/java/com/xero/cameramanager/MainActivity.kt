@@ -36,11 +36,6 @@ class MainActivity : AppCompatActivity() {
 	)
 	private var res: String? = null
 
-	//timer set variable
-	private var captureTime = 0L
-	private var isRunning = false
-	var handler: Handler = Handler()
-
 	@SuppressLint("MissingInflatedId")
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -110,26 +105,22 @@ class MainActivity : AppCompatActivity() {
 
 		captureButton.setOnClickListener {
 			xeroCamera.startVideo(onStart = {
-				startTimer()
 				Toast.makeText(this, "Recording started", Toast.LENGTH_SHORT).show()
 			}, onSuccess = {
 				Toast.makeText(this, "Recording success $it", Toast.LENGTH_SHORT).show()
 			}, onError = {
 				Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show()
-			})
+			}, timerView = timer)
 		}
 
 		switchMode.setOnClickListener {
-			stopTimer()
 			xeroCamera.stopVideo()
 		}
 
 		scanOn.setOnClickListener {
-			pauseTimer()
 			xeroCamera.pauseVideo()
 		}
 		scanOff.setOnClickListener {
-			resumeTimer()
 			xeroCamera.resumeVideo()
 		}
 		frontCamera.setOnClickListener {
@@ -145,45 +136,9 @@ class MainActivity : AppCompatActivity() {
 		}
 
 		xeroCamera.setSeekBarZoom(seekBar = zoom)
-		
+
 //		frontCamera.setOnClickListener {
 //			xeroCamera.switchLensFacing(CameraSelector.LENS_FACING_BACK)
 //		}
-	}
-
-	private val updateCaptureTime: Runnable = object : Runnable {
-		override fun run() {
-			if (isRunning) {
-				val minutes = TimeUnit.MILLISECONDS.toMinutes(captureTime)
-				val seconds = TimeUnit.MILLISECONDS.toSeconds(captureTime) % 60
-				timer.text = String.format("%02d:%02d", minutes, seconds)
-				captureTime += 100 // Increment by 100ms
-				handler.postDelayed(this, 100)
-			}
-		}
-	}
-
-	private fun startTimer() {
-		if (!isRunning) {
-			isRunning = true
-			handler.post(updateCaptureTime)
-		}
-	}
-
-	private fun pauseTimer() {
-		isRunning = false
-	}
-
-	private fun resumeTimer() {
-		if (!isRunning) {
-			isRunning = true
-			handler.post(updateCaptureTime)
-		}
-	}
-
-	private fun stopTimer() {
-		isRunning = false
-		captureTime = 0L
-		timer.text = "00:00"
-	}
+	} 
 }
