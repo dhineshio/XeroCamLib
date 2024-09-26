@@ -94,25 +94,25 @@ class MainActivity : AppCompatActivity() {
 			res = barcode
 		}
 
-		captureButton.setOnClickListener {
-			xeroCamera.takePhoto(onSuccess = {
-				Log.e("MainActivity", "Success $it")
-			}, onFailure = {
-				Log.e("MainActivity", "failed $it")
-			}, false, false,"ThaagamvEducation", "photo",
-				"Dhin"
-			)
-		}
-
 //		captureButton.setOnClickListener {
-//			xeroCamera.startVideo(onStart = {
-//				Toast.makeText(this, "Recording started", Toast.LENGTH_SHORT).show()
-//			}, onSuccess = {
-//				Toast.makeText(this, "Recording success $it", Toast.LENGTH_SHORT).show()
-//			}, onError = {
-//				Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show()
-//			}, timerView = timer)
+//			xeroCamera.takePhoto(onSuccess = {
+//				Log.e("MainActivity", "Success $it")
+//			}, onFailure = {
+//				Log.e("MainActivity", "failed $it")
+//			}, false, false,"ThaagamvEducation", "photo",
+//				"Dhin"
+//			)
 //		}
+
+		captureButton.setOnClickListener {
+			xeroCamera.startVideo(onStart = {
+				Toast.makeText(this, "Recording started", Toast.LENGTH_SHORT).show()
+			}, onSuccess = {
+				Toast.makeText(this, "Recording success $it", Toast.LENGTH_SHORT).show()
+			}, onError = {
+				Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show()
+			}, timerView = timer, "ThaagamVFOund", "vid", "paithiyuam/rt")
+		}
 
 		switchMode.setOnClickListener {
 			xeroCamera.stopVideo()

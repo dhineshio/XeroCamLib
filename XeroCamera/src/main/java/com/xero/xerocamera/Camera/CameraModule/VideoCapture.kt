@@ -57,8 +57,16 @@ class VideoCapture(
 		}?.apply {
 			if (!exists()) mkdirs()
 		}
-		val outputDirectory = File(rootDirectory, subDirectoryName).apply {
-			if (!exists()) mkdirs()
+
+		var outputDirectory = rootDirectory
+
+		if (subDirectoryName.isNotEmpty()) {
+			val subDirParts = subDirectoryName.split("/")
+			outputDirectory = subDirParts.fold(rootDirectory) { parentDir, dirName ->
+				File(parentDir, dirName).apply {
+					if (!exists()) mkdir()
+				}
+			}
 		}
 
 		val formattedTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHss"))
