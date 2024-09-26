@@ -35,13 +35,22 @@ class PhotoCapture(
 			}?.apply {
 				if (!exists()) mkdirs()
 			}
-		}
-		val outputDirectory = File(rootDirectory, subDirectoryName).apply {
-			if (!exists()) mkdirs()
+		} ?: context.cacheDir // Fallback to cache dir if external storage is not available
+
+		var outputDirectory = rootDirectory
+
+		if (subDirectoryName.isNotEmpty()) {
+			val subDirParts = subDirectoryName.split("/")
+			outputDirectory = subDirParts.fold(rootDirectory) { parentDir, dirName ->
+				File(parentDir, dirName).apply {
+					if (!exists()) mkdir()
+				}
+			}
 		}
 		val formattedTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
 		val imageFile = File(outputDirectory, "${fileName}_$formattedTime.jpg")
 		val outputOptions = ImageCapture.OutputFileOptions.Builder(imageFile).build()
+
 		imageCapture.takePicture(
 			outputOptions, ContextCompat.getMainExecutor(context),
 			object : ImageCapture.OnImageSavedCallback {
