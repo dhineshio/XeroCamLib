@@ -13,5 +13,12 @@ data class CameraCore(
   var cameraPreview: PreviewView? = null,
   var lensFacing: Int = CameraSelector.LENS_FACING_BACK,
   var isScanner: Boolean? = false,
+  var isLiveScan : Boolean? = false,
   var scannerOverlay: ScannerOverlay? = null,
 )
+
+enum class FileNameType{
+  TIME_STAMP,
+  COUNT,
+  BOTH
+}

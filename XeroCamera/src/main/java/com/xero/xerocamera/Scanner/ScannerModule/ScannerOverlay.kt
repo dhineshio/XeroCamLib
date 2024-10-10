@@ -90,7 +90,7 @@ class ScannerOverlay @JvmOverloads constructor(
 
   private fun fadeOutOverlay() {
     val fadeOut = ValueAnimator.ofFloat(1f, 0f).apply {
-      duration = 500
+      duration = 50
       addUpdateListener { animation ->
         alpha = animation.animatedValue as Float
       }
@@ -109,7 +109,7 @@ class ScannerOverlay @JvmOverloads constructor(
       provideHapticFeedback(view, hapticFeedBack)
       hideOverlayHandler.postDelayed({
         fadeOutOverlay()
-      }, 500)
+      }, 50)
     } else {
       visibility = View.VISIBLE
       framePaint.color = Color.WHITE

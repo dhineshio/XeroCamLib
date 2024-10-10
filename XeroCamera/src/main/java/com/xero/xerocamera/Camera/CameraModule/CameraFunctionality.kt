@@ -6,6 +6,7 @@ import android.widget.TextView
 import androidx.annotation.FloatRange
 import androidx.camera.view.PreviewView
 import androidx.lifecycle.LifecycleOwner
+import com.xero.xerocamera.Camera.Models.FileNameType
 import com.xero.xerocamera.XeroCamera
 
 sealed class FlashMode {
@@ -30,6 +31,7 @@ interface CameraFunctionality {
 	useCache: Boolean? = false,
 	directoryName: String? = "Demo",
 	fileName: String? = "img",
+	fileNameType: FileNameType? = FileNameType.TIME_STAMP,
 	subDirectoryName: String? = "Photo",
   )
   fun startVideo(
@@ -50,6 +52,7 @@ interface CameraFunctionality {
 	enableSound: Boolean? = true,
 	directoryName: String? = "Demo",
 	fileName: String? = "img",
+	fileNameType: FileNameType? = FileNameType.TIME_STAMP,
 	subDirectoryName: String? ="photo"
   )
 
@@ -63,7 +66,7 @@ interface CameraFunctionality {
 	fun setContext(context: Context): XeroCamera.Builder
 	fun setCameraPreview(cameraPreview: PreviewView): XeroCamera.Builder
 	fun setLifecycleOwner(owner: LifecycleOwner): XeroCamera.Builder
-	fun enableScanner(isScanner: Boolean): XeroCamera.Builder
+	fun enableScanner(isScanner: Boolean, isLiveScan : Boolean): XeroCamera.Builder
 	fun setLensFacing(lensFacing: Int): XeroCamera.Builder
   }
 }

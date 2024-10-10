@@ -14,9 +14,11 @@ import kotlinx.coroutines.launch
 
 class ScannerAnalyzer(
   private val scannerOverlay: ScannerOverlay,
+  private val isLiveScan : Boolean,
   private val onResult: (state: ScannerViewState, barcode: String) -> Unit,
 ) : ImageAnalysis.Analyzer {
   private var isScanning: Boolean = false
+  private var hasFoundFirstQR = false
 
   @SuppressLint("UnsafeOptInUsageError")
   override fun analyze(imageProxy: ImageProxy) {
@@ -34,8 +36,13 @@ class ScannerAnalyzer(
             .addOnSuccessListener { barcodes ->
               for (barcode in barcodes) {
                 onResult(ScannerViewState.Success, barcode.rawValue ?: "")
-                scannerOverlay.setScanSuccessful(true)
-                isScanning = true
+                if(!hasFoundFirstQR){
+                  scannerOverlay.setScanSuccessful(true)
+                  hasFoundFirstQR = true
+                }
+                if(!isLiveScan){
+                  isScanning = true
+                }
               }
             }
             .addOnFailureListener {
@@ -47,14 +54,14 @@ class ScannerAnalyzer(
               }
             }
         }
-    }
-    else {
+    } else {
       Log.d("ScannerAnalyzer", "analyze: $isScanning")
     }
   }
 
   fun isScanned(isScanned: Boolean) {
     isScanning = isScanned
+    hasFoundFirstQR = false
     scannerOverlay.setScanSuccessful(false)
     Log.d("ScannerAnalyzer", "setTest: $isScanning")
   }

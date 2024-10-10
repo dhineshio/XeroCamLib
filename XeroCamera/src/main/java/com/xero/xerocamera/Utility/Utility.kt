@@ -29,8 +29,8 @@ class Utility(private val cameraCore: CameraCore) {
 	  )
 	}
 	(cameraCore.cameraPreview!! as ViewGroup).addView(overlayView)
-	overlayView.animate().alpha(1f).setDuration(100).withEndAction {
-	  overlayView.animate().alpha(0f).setDuration(100).withEndAction {
+	overlayView.animate().alpha(1f).setDuration(10).withEndAction {
+	  overlayView.animate().alpha(0f).setDuration(10).withEndAction {
 		cameraCore.cameraPreview!!.removeView(overlayView)
 	  }.start()
 	}.start()
