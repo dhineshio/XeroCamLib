@@ -41,6 +41,7 @@ interface CameraFunctionality {
 		timerView: TextView,
 		directoryName: String? = "Demo",
 		fileName: String? = "vid",
+		fileNameType: FileNameType? = FileNameType.TIME_STAMP,
 		subDirectoryName: String? = "Video",
   )
   fun stopVideo()

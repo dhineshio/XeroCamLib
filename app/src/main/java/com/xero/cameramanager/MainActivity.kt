@@ -97,25 +97,25 @@ class MainActivity : AppCompatActivity() {
       Log.e("BARCODE", "$res")
     }
 
-		captureButton.setOnClickListener {
-			xeroCamera.takePhoto(onSuccess = {
-				Log.e("MainActivity", "Success $it")
-			}, onFailure = {
-				Log.e("MainActivity", "failed $it")
-			}, true, false,"ThaagamvEducation", "photo",
-				FileNameType.BOTH,"Dhin"
-			)
-		}
+//		captureButton.setOnClickListener {
+//			xeroCamera.takePhoto(onSuccess = {
+//				Log.e("MainActivity", "Success $it")
+//			}, onFailure = {
+//				Log.e("MainActivity", "failed $it")
+//			}, true, false,"ThaagamvEducation", "photo",
+//				FileNameType.BOTH,"Dhin"
+//			)
+//		}
 
-//    captureButton.setOnClickListener {
-//      xeroCamera.startVideo(onStart = {
-//        Toast.makeText(this, "Recording started", Toast.LENGTH_SHORT).show()
-//      }, onSuccess = {
-//        Toast.makeText(this, "Recording success $it", Toast.LENGTH_SHORT).show()
-//      }, onError = {
-//        Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show()
-//      }, timerView = timer, "ThaagamVFOund", "vid", "paithiyuam/rt")
-//    }
+    captureButton.setOnClickListener {
+      xeroCamera.startVideo(onStart = {
+        Toast.makeText(this, "Recording started", Toast.LENGTH_SHORT).show()
+      }, onSuccess = {
+        Toast.makeText(this, "Recording success $it", Toast.LENGTH_SHORT).show()
+      }, onError = {
+        Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show()
+      }, timerView = timer, "ThaagamVFOund", "vid", FileNameType.BOTH,"paithiyuam/rt")
+    }
 
     switchMode.setOnClickListener {
       xeroCamera.stopVideo()

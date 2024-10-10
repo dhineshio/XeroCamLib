@@ -95,11 +95,13 @@ class XeroCamera private constructor(
     timerView: TextView,
     directoryName: String?,
     fileName: String?,
+    fileNameType: FileNameType?,
     subDirectoryName: String?
   ) {
     videoCapture.startVideo(
       directoryName!!,
       fileName!!,
+      fileNameType!!,
       subDirectoryName!!,
       timerView,
       onStart,
