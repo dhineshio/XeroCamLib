@@ -80,9 +80,9 @@ class VideoCapture(
     }
     val totalVideoCount = (videoFileCount?.size?.plus(1)) ?: 1
     val fileName =  when(fileNameType){
-      FileNameType.TIME_STAMP -> "${fileName}_$formattedTime.jpg"
-      FileNameType.COUNT -> "${fileName}_$totalVideoCount.jpg"
-      FileNameType.BOTH -> "${fileName}_${totalVideoCount}_$formattedTime.jpg"
+      FileNameType.TIME_STAMP -> "${fileName}_$formattedTime.mp4"
+      FileNameType.COUNT -> "${fileName}_$totalVideoCount.mp4"
+      FileNameType.BOTH -> "${fileName}_${totalVideoCount}_$formattedTime.mp4"
     }
     val videoFile = File(outputDirectory, fileName)
     val outputOptions = FileOutputOptions.Builder(videoFile).build()
