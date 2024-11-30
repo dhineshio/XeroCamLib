@@ -22,7 +22,7 @@ To integrate the XeroCam library into your project, add the following dependency
 
 ```groovy
 dependencies {
-    implementation 'com.xero:xerocamera:1.0.0'
+    implementation 'com.github.dhineshio:XeroCamLib:1.0.6'
 }
 ```
 
